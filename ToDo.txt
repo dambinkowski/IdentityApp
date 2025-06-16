@@ -1,0 +1,8 @@
+#       TO DO        # 
+
+- test if django is running 
+- add apps to settngis 
+- structure url 
+- create url files 
+- home page, url, view, html 
+- make migrations to add apps 
