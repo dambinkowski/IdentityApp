@@ -17,7 +17,7 @@ class Request(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20)
     def __str__(self):
-        return f"FROM:{self.sender.username} / TO:{self.receiver.username} / {self.request_reasoning}"
+        return f"[{self.pk}] FROM:{self.sender.username} / TO:{self.receiver.username} / {self.request_reasoning}"
 
 class RequestIdentityVariant(models.Model):
     request = models.ForeignKey(Request, on_delete=models.CASCADE, related_name='identity_variants')

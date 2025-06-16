@@ -1,6 +1,8 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.generics import RetrieveAPIView
+from .serializer import *
+from core.models import *
+from django.shortcuts import get_object_or_404
 
-class TestView(APIView):
-    def get(self, request, *args, **kwargs):
-        return Response({'test': 'works'})
+class TestView(RetrieveAPIView):
+    serializer_class = RequestPrototypeSerializer
+    queryset = Request.objects.select_related('sender', 'receiver')

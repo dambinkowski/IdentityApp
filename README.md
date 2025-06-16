@@ -40,3 +40,9 @@ python manage.py startapp api
 
 ### instal DRF (Django Rest Framework)
 pip install djangorestframework 
+
+### Superuser
+python manage.py createsuperuser
+root
+test123123
+
