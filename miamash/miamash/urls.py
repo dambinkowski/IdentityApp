@@ -2,8 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    # admin page 
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
-    path('', include('web.urls')),
+    # api app
     path('api/', include('api.urls')),
+    # web app 
+    path('', include('web.urls')),
+    
 ]

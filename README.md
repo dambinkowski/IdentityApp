@@ -46,3 +46,7 @@ python manage.py createsuperuser
 root
 test123123
 
+
+### doing a brench to try external authentication 
+pip install 'dj-rest-auth[with_social]' django-allauth
+pip install djangorestframework-simplejwt
