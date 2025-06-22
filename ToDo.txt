@@ -6,3 +6,18 @@
 - create url files 
 - home page, url, view, html 
 - make migrations to add apps 
+
+
+- API 
+- profile identity variants 
+
+- request send 
+- create method 
+valiadet data 
+{'receiver': {'username': 'Michael'}, 'request_reasoning': 'how you doin'}
+i need to access username to put it to creation 
+- update method 
+uperantly using roture i need 
+- request received
+
+- request variants 
