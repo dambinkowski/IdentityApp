@@ -44,7 +44,32 @@ class RequestSendDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Request.objects.filter(sender=self.request.user)
 
+class RequestSendRequestIdentityVariantListCreateAPIView(generics.ListCreateAPIView):
+    """
+    User can see and create request identity variants for their sent-requests.
+    """
+    serializer_class = RequestSendRequestIdentityVariantSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        request_id = self.kwargs['pk']
+        return RequestIdentityVariant.objects.filter(request__id=request_id, request__sender=self.request.user)
+
+    def perform_create(self, serializer):
+        request_id = self.kwargs['pk']
+        request_instance = generics.get_object_or_404(Request, id=request_id, sender=self.request.user)
+        serializer.save(request=request_instance)
+
+class RequestSendRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    User can see, edit and delete request identity variants for their sent-requests.
+    """
+    serializer_class = RequestSendRequestIdentityVariantSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        request_id = self.kwargs['pk']
+        return RequestIdentityVariant.objects.filter(request__id=request_id, request__sender=self.request.user)
 
 
 

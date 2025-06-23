@@ -41,20 +41,37 @@ class RequestSendListCreateSerializer(serializers.ModelSerializer):
         # return created instance 
         return request_instance
     
+class RequestSendRequestIdentityVariantSerializer(serializers.ModelSerializer):
+    user_provided_variant = serializers.CharField(source='profile_link.variant', read_only=True)
+    class Meta:
+        model = RequestIdentityVariant
+        fields = ['id', 'label', 'context', 'user_provided_variant']
+        read_only_fuields = ['id', 'user_variant']
+    
+    def create(self, validated_data):
+        # ensure request belongs to the sender (current user)
+        request_instance = validated_data['request']
+        if request_instance.sender != self.context['request'].user:
+            raise serializers.ValidationError("You can only add identity variants to your own requests.")
+        return super().create(validated_data)
+    
+
 class RequestSendDetailSerializer(serializers.ModelSerializer):
     # make receiver username read-only not allowing to change in update
     receiver_username = serializers.CharField(source='receiver.username', read_only=True) 
-    
+    # include nested request-identity-variants related to this request
+    request_identity_variants = RequestSendRequestIdentityVariantSerializer(many=True, read_only=True)
     class Meta:
         model = Request
-        fields = ['id', 'receiver_username', 'request_reasoning', 'status', 'created_at']
-        read_only_fields = ['id', 'receiver_username', 'created_at', 'status']
+        fields = ['id', 'receiver_username', 'request_reasoning', 'status', 'created_at', 'request_identity_variants']
+        read_only_fields = ['id', 'receiver_username', 'created_at', 'status', 'request_identity_variants']
     
     def update(self, instance, validated_data):
         # only allow updating request_reasoning 
         instance.request_reasoning = validated_data.get('request_reasoning', instance.request_reasoning)
         instance.save()
         return instance
+
 
 
 

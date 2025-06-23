@@ -21,6 +21,8 @@ urlpatterns = [
     # send requests management
     path('request/send/', RequestSendListCreateAPIView.as_view(), name='request-send-list-create'),
     path('request/send/<int:pk>/', RequestSendDetailAPIView.as_view(), name='request-send-detail'),
+    path('request/send/<int:pk>/request-identity-variant/', RequestSendRequestIdentityVariantListCreateAPIView.as_view(), name='request-send-request-identity-variant-list-create'),
+    path('request/send/<int:pk>/request-identity-variant/<int:request_identity_variant_pk>/', RequestSendRequestIdentityVariantDetailAPIView.as_view(), name='request-send-request-identity-variant-detail'),
     # received requests management 
 
 

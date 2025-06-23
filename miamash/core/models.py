@@ -31,7 +31,7 @@ class Request(models.Model):
         return f"[{self.pk}] FROM:{self.sender.username} / TO:{self.receiver.username} / {self.request_reasoning}"
 
 class RequestIdentityVariant(models.Model):
-    request = models.ForeignKey(Request, on_delete=models.CASCADE, related_name='identity_variants')
+    request = models.ForeignKey(Request, on_delete=models.CASCADE, related_name='request_identity_variants')
     label = models.CharField(max_length=50)
     context = models.TextField(blank=True)
     profile_link = models.ForeignKey(ProfileIdentityVariant,null=True, blank=True, on_delete=models.SET_NULL) 

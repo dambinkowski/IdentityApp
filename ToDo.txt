@@ -1,21 +1,36 @@
 #       TO DO        # 
 
-- test if django is running 
-- add apps to settngis 
-- structure url 
-- create url files 
-- home page, url, view, html 
-- make migrations to add apps 
++ test if django is running 
++ add apps to settngis 
++ structure url 
++ create url files 
++ home page, url, view, html 
++ make migrations to add apps 
 
 
-- API 
-- profile identity variants 
++ API 
++ profile identity variants 
 
-- request send 
-- create method 
++ request send 
++ create method 
 valiadet data 
 {'receiver': {'username': 'Michael'}, 'request_reasoning': 'how you doin'}
 i need to access username to put it to creation 
+okay with update had to go back, and create extra field
+because I don't want to be able to update receiver becaues then that would relate 
+to links etc. 
+now serializer is different 
+okay i give up I am gonna use generic view for this part
+there is so much logic that might as well 
+redoing keep viewsets for profile identity variants 
+but for requests I am going to explicitly set 
++ request / send / get list - post new 
++ request / send / {pk} / - get detials, put update delete 
+- add list of request identity variants 
+because of separation between sender and receiver
+i can make serializer with link for sender to be read only for safety 
+
++ request / send / {pk} / 
 - update method 
 uperantly using roture i need 
 - request received
