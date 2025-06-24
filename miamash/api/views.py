@@ -3,6 +3,7 @@ from core.models import *
 from .serializers import *
 from .permissions import *
 
+
 # Profile Identity Variant views 
 class ProfileIdentityVariantListCreateAPIView(generics.ListCreateAPIView):
     """
@@ -158,6 +159,10 @@ class RequestReceiveDenyAPIView(generics.UpdateAPIView):
     def perform_update(self, serializer):
         request_instance = self.get_object()
         serializer.save(request=request_instance, status=Request.Status.DENIED)
+
+
+
+
 
 # class SenderRequestViewSet(viewsets.ModelViewSet):
 #     """

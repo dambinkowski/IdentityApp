@@ -1,11 +1,9 @@
 from .views import *
 from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 
 urlpatterns = [
-    # API documentation
-    
-
     # registration and authentication
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/register/', include('dj_rest_auth.registration.urls')),
@@ -27,5 +25,10 @@ urlpatterns = [
     path('request/receive/<int:pk>/request-identity-variant/<int:request_identity_variant_pk>/', RequestReceiveRequestIdentityVariantDetailAPIView.as_view(), name='request-receive-request-identity-variant-detail'),
     path('request/receive/<int:pk>/accept/', RequestReceiveAcceptAPIView.as_view(), name='request-receive-accept'),
     path('request/receive/<int:pk>/deny/', RequestReceiveDenyAPIView.as_view(), name='request-receive-deny'),
+
+    # API documentation
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 

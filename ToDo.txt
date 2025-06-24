@@ -41,5 +41,7 @@ at the coures, but then when reading OpenAPI documentiatno,  I
 checked django documentiatn for documenting api 
 https://www.django-rest-framework.org/topics/documenting-your-api/
 and I found recomandation for drf-spectacular so I am gonnat try that 
+pip install drf-spectacular 
+https://drf-spectacular.readthedocs.io/en/latest/readme.html
 
 - request variants 
