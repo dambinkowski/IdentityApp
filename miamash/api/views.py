@@ -116,7 +116,35 @@ class RequestReceiveRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateA
         request_id = self.kwargs['pk']
         return RequestIdentityVariant.objects.filter(request__id=request_id, request__receiver=self.request.user)
 
+class RequestReceiveAcceptAPIView(generics.UpdateAPIView):
+    """
+    User can accept their received request.
+    """
+    serializer_class = RequestReceiveStatusSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_url_kwarg = 'pk'
 
+    def get_queryset(self):
+        return Request.objects.filter(receiver=self.request.user)
+
+    def perform_update(self, serializer):
+        request_instance = self.get_object()
+        serializer.save(request=request_instance, status=Request.Status.ACCEPTED)
+
+class RequestReceiveDenyAPIView(generics.UpdateAPIView):
+    """
+    User can deny their received request.
+    """
+    serializer_class = RequestReceiveStatusSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        return Request.objects.filter(receiver=self.request.user)
+
+    def perform_update(self, serializer):
+        request_instance = self.get_object()
+        serializer.save(request=request_instance, status=Request.Status.DENIED)
 
 # class SenderRequestViewSet(viewsets.ModelViewSet):
 #     """

@@ -28,5 +28,7 @@ urlpatterns = [
     path('request/receive/<int:pk>/', RequestReceiveDetailAPIView.as_view(), name='request-receive-detail'),
     path('request/receive/<int:pk>/request-identity-variant/', RequestReceiveRequestIdentityVariantListAPIView.as_view(), name='request-receive-request-identity-variant-list'),
     path('request/receive/<int:pk>/request-identity-variant/<int:request_identity_variant_pk>/', RequestReceiveRequestIdentityVariantDetailAPIView.as_view(), name='request-receive-request-identity-variant-detail'),
+    path('request/receive/<int:pk>/accept/', RequestReceiveAcceptAPIView.as_view(), name='request-receive-accept'),
+    path('request/receive/<int:pk>/deny/', RequestReceiveDenyAPIView.as_view(), name='request-receive-deny'),
 ]
 

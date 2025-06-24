@@ -110,6 +110,12 @@ class RequestReceiveRequestIdentityVariantDetailSerializer(serializers.ModelSeri
         fields = ['id', 'label', 'context', 'profile_link', 'user_provided_variant']
         read_only_fields = ['id', 'label', 'context', 'user_provided_variant']
     
+class RequestReceiveStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Request
+        fields = ['status']
+        read_only_fields = ['status']
+    
 
 
 
