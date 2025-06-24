@@ -71,6 +71,50 @@ class RequestSendRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateDest
         request_id = self.kwargs['pk']
         return RequestIdentityVariant.objects.filter(request__id=request_id, request__sender=self.request.user)
 
+class RequestReceiveListAPIView(generics.ListAPIView):
+    """
+    User can see received requests.
+    """
+    serializer_class = RequestReceiveListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    # for list query where logged in user is the receiver only 
+    def get_queryset(self):
+        return Request.objects.filter(receiver=self.request.user)
+    
+class RequestReceiveDetailAPIView(generics.RetrieveAPIView):
+    """
+    User can see details of a received request.
+    """
+    serializer_class = RequestReceiveDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    # for detail query where logged in user is the receiver only 
+    def get_queryset(self):
+        return Request.objects.filter(receiver=self.request.user)
+
+class RequestReceiveRequestIdentityVariantListAPIView(generics.ListAPIView):
+    """
+    User can see request identity variants for their received requests.
+    """
+    serializer_class = RequestReceiveRequestIdentityVariantSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        request_id = self.kwargs['pk']
+        return RequestIdentityVariant.objects.filter(request__id=request_id, request__receiver=self.request.user)
+    
+class RequestReceiveRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateAPIView):
+    """
+    User can see and edit request identity variants for their received requests.
+    """
+    serializer_class = RequestReceiveRequestIdentityVariantDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_url_kwarg = 'request_identity_variant_pk'
+
+    def get_queryset(self):
+        request_id = self.kwargs['pk']
+        return RequestIdentityVariant.objects.filter(request__id=request_id, request__receiver=self.request.user)
 
 
 

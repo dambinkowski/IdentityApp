@@ -10,7 +10,9 @@ class ProfileIdentityVariantSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
         
 
+
 # Request Send Serializers
+
 class RequestSendListCreateSerializer(serializers.ModelSerializer):
     # list usernames instead of users ids  
     receiver_username = serializers.CharField(source='receiver.username') 
@@ -72,6 +74,42 @@ class RequestSendDetailSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+
+# Request Receive Serializers
+class RequestReceiveListSerializer(serializers.ModelSerializer):
+    sender_username = serializers.CharField(source='sender.username', read_only=True) 
+    
+    class Meta:
+        model = Request
+        fields = ['id', 'sender_username', 'request_reasoning', 'status', 'created_at']
+        read_only_fields = ['id', 'sender_username', 'request_reasoning','status','created_at']
+    
+class RequestReceiveRequestIdentityVariantSerializer(serializers.ModelSerializer):
+    user_provided_variant = serializers.CharField(source='profile_link.variant', read_only=True)
+    class Meta:
+        model = RequestIdentityVariant
+        fields = ['id', 'label', 'context', 'user_provided_variant']
+        read_only_fuields = ['id', 'label', 'context']
+
+class RequestReceiveDetailSerializer(serializers.ModelSerializer):
+    sender_username = serializers.CharField(source='sender.username', read_only=True) 
+    # include nested request-identity-variants related to this request
+    request_identity_variants = RequestReceiveRequestIdentityVariantSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Request
+        fields = ['id', 'sender_username', 'request_reasoning', 'status', 'created_at', 'request_identity_variants']
+        read_only_fields = ['id', 'sender_username', 'created_at', 'status', 'request_identity_variants']
+
+class RequestReceiveRequestIdentityVariantDetailSerializer(serializers.ModelSerializer):
+    user_provided_variant = serializers.CharField(source='profile_link.variant', read_only=True)
+    
+    class Meta:
+        model = RequestIdentityVariant
+        fields = ['id', 'label', 'context', 'profile_link', 'user_provided_variant']
+        read_only_fields = ['id', 'label', 'context', 'user_provided_variant']
+    
 
 
 

@@ -24,7 +24,9 @@ urlpatterns = [
     path('request/send/<int:pk>/request-identity-variant/', RequestSendRequestIdentityVariantListCreateAPIView.as_view(), name='request-send-request-identity-variant-list-create'),
     path('request/send/<int:pk>/request-identity-variant/<int:request_identity_variant_pk>/', RequestSendRequestIdentityVariantDetailAPIView.as_view(), name='request-send-request-identity-variant-detail'),
     # received requests management 
-
-
+    path('request/receive/', RequestReceiveListAPIView.as_view(), name='request-receive-list'),
+    path('request/receive/<int:pk>/', RequestReceiveDetailAPIView.as_view(), name='request-receive-detail'),
+    path('request/receive/<int:pk>/request-identity-variant/', RequestReceiveRequestIdentityVariantListAPIView.as_view(), name='request-receive-request-identity-variant-list'),
+    path('request/receive/<int:pk>/request-identity-variant/<int:request_identity_variant_pk>/', RequestReceiveRequestIdentityVariantDetailAPIView.as_view(), name='request-receive-request-identity-variant-detail'),
 ]
 
