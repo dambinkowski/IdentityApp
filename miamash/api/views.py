@@ -1,23 +1,36 @@
-from rest_framework import viewsets, generics, permissions
+from rest_framework import generics, permissions
 from core.models import * 
 from .serializers import *
 from .permissions import *
 
-
-class ProfileIdentityVariantViewSet(viewsets.ModelViewSet):
+# Profile Identity Variant views 
+class ProfileIdentityVariantListCreateAPIView(generics.ListCreateAPIView):
     """
-    User can see, create, edit and delete their profile identity variants.
+    User can see their profile identity variants and create new ones.
     """
-    queryset = ProfileIdentityVariant.objects.all()
     serializer_class = ProfileIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated, IsProfileOwner]
+    permission_classes = [permissions.IsAuthenticated]
 
+    # for list query where logged in user is the owner only 
     def get_queryset(self):
-        user = self.request.user
-        return ProfileIdentityVariant.objects.filter(user=user)
+        return ProfileIdentityVariant.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+class ProfileIdentityVariantDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    User can see, edit and delete their profile identity variants.
+    """
+    serializer_class = ProfileIdentityVariantSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    # for detail query where logged in user is the owner only 
+    def get_queryset(self):
+        return ProfileIdentityVariant.objects.filter(user=self.request.user)
+
+
+# Request Send views 
 
 class RequestSendListCreateAPIView(generics.ListCreateAPIView):
     """

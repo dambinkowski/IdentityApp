@@ -34,5 +34,12 @@ i can make serializer with link for sender to be read only for safety
 - update method 
 uperantly using roture i need 
 - request received
+i want to add documentiatno since I am moving away from 
+roture, I liked how links were shown, so I want to see 
+documentiation, I was going to use swagger because it sometihng I was learnig 
+at the coures, but then when reading OpenAPI documentiatno,  I 
+checked django documentiatn for documenting api 
+https://www.django-rest-framework.org/topics/documenting-your-api/
+and I found recomandation for drf-spectacular so I am gonnat try that 
 
 - request variants 
