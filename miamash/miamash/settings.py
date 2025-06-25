@@ -144,13 +144,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # allauth settings
 ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_LOGIN_METHODS = {'username', 'email'}
-ACCOUNT_SIGNUP_FIELDS = [
-    'username*',
+ACCOUNT_LOGIN_METHODS   = ['username']  
+ACCOUNT_SIGNUP_FIELDS   = [
     'email*',
+    'username*',
     'password1*',
     'password2*'
-]
+    ]
 
 # REST framework settings
 REST_USE_JWT = True
@@ -172,6 +172,28 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',)
 }
+
+# dj-rest-auth settings
+DJ_REST_AUTH = {
+    # Fields required at registration
+    "SIGNUP_FIELDS": {
+        "username":  {"required": True},
+        "email":     {"required": True},
+        "password1": {"required": True},
+        "password2": {"required": True},
+    },
+    # Allowed login identifiers
+    "LOGIN_METHODS": ["username"]
+}
+# Depricated warning wrong flag 
+import warnings
+warnings.filterwarnings(
+    'ignore',
+    message=r"app_settings\.(USERNAME|EMAIL)_REQUIRED is deprecated",
+    module="dj_rest_auth.registration.serializers",
+)
+
+
 
 # Spectacular settings - API documentation
 SPECTACULAR_SETTINGS = {

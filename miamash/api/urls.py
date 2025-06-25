@@ -6,7 +6,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 urlpatterns = [
     # registration and authentication
     path('auth/', include('dj_rest_auth.urls')),
-    path('auth/register/', include('dj_rest_auth.registration.urls')),
+    path('auth/registration/', include('dj_rest_auth.registration.urls')),
 
     # profile identity variant management 
     path('profile/identity-variant/', ProfileIdentityVariantListCreateAPIView.as_view(), name='profile-identity-variant-list-create'),

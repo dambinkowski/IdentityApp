@@ -1,16 +1,57 @@
-from django.test import TestCase
+from rest_framework.test import APITestCase
+from rest_framework import status
+from django.urls import reverse 
+from django.contrib.auth import get_user_model
+User = get_user_model() # in case of at some point using custom user model
 
+# import response 
 ## REGISTRATION AND LOGIN ## 
+class AuthenticationTests(APITestCase):
+    def setUp(self):
+        # Create a user for testing
+        self.username = 'Johny'
+        self.password = 'test123123'
+        self.user = User.objects.create_user(
+            username=self.username,
+            password=self.password,
+        )
 
-# user can log in  with good credentials
+        self.valid_user_data = {
+            'username': 'Johny',
+            'password': 'test123123',
+        }
 
-# user cannot log in with bad credentials
+        self.wrong_password_data = {
+            'username': 'Johny',
+            'password': 'wrongpassword',
+        }   
 
-# user can log out
+        self.wrong_username_data = {
+            'username': 'WrongUser',
+            'password': 'test123123',
+        }
 
-# user can register with good credentials
+        # Define URLs for registration, login, and logout
 
-# user cannot register with bad credentials
+        self.register_url = reverse('rest_register')
+        self.login_url = reverse('rest_login')
+        self.logout_url = reverse('rest_logout')
+        
+
+    # user can log in  with good credentials
+    def test_user_can_login_with_good_credentials(self):
+        response = self.client.post(self.login_url, self.valid_user_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('key', response.data)  
+
+
+    # user cannot log in with bad credentials
+
+    # user can log out
+
+    # user can register with good credentials
+
+    # user cannot register with bad credentials
 
 
 
