@@ -24,7 +24,7 @@ class ProfileIdentityVariantDetailAPIView(generics.RetrieveUpdateDestroyAPIView)
     User can see, edit and delete their profile identity variants.
     """
     serializer_class = ProfileIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsProfileOwner]
 
     # for detail query where logged in user is the owner only 
     def get_queryset(self):
@@ -52,7 +52,7 @@ class RequestSendDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     User can see, edit and delete their sent-requests.
     """
     serializer_class = RequestSendDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestSender]
 
     # for detail query where logged in user is the sender only 
     def get_queryset(self):
@@ -63,7 +63,7 @@ class RequestSendRequestIdentityVariantListCreateAPIView(generics.ListCreateAPIV
     User can see and create request identity variants for their sent-requests.
     """
     serializer_class = RequestSendRequestIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestSender]
 
     def get_queryset(self):
         request_id = self.kwargs['pk']
@@ -79,11 +79,15 @@ class RequestSendRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateDest
     User can see, edit and delete request identity variants for their sent-requests.
     """
     serializer_class = RequestSendRequestIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestSender]
 
     def get_queryset(self):
         request_id = self.kwargs['pk']
         return RequestIdentityVariant.objects.filter(request__id=request_id, request__sender=self.request.user)
+
+
+
+# Request Receive views
 
 class RequestReceiveListAPIView(generics.ListAPIView):
     """
@@ -101,7 +105,7 @@ class RequestReceiveDetailAPIView(generics.RetrieveAPIView):
     User can see details of a received request.
     """
     serializer_class = RequestReceiveDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
 
     # for detail query where logged in user is the receiver only 
     def get_queryset(self):
@@ -112,7 +116,7 @@ class RequestReceiveRequestIdentityVariantListAPIView(generics.ListAPIView):
     User can see request identity variants for their received requests.
     """
     serializer_class = RequestReceiveRequestIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
 
     def get_queryset(self):
         request_id = self.kwargs['pk']
@@ -123,7 +127,7 @@ class RequestReceiveRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateA
     User can see and edit request identity variants for their received requests.
     """
     serializer_class = RequestReceiveRequestIdentityVariantDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
     lookup_url_kwarg = 'request_identity_variant_pk'
 
     def get_queryset(self):
@@ -135,7 +139,7 @@ class RequestReceiveAcceptAPIView(generics.UpdateAPIView):
     User can accept their received request.
     """
     serializer_class = RequestReceiveStatusSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
     lookup_url_kwarg = 'pk'
 
     def get_queryset(self):
@@ -150,7 +154,7 @@ class RequestReceiveDenyAPIView(generics.UpdateAPIView):
     User can deny their received request.
     """
     serializer_class = RequestReceiveStatusSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
     lookup_url_kwarg = 'pk'
 
     def get_queryset(self):
@@ -159,41 +163,3 @@ class RequestReceiveDenyAPIView(generics.UpdateAPIView):
     def perform_update(self, serializer):
         request_instance = self.get_object()
         serializer.save(request=request_instance, status=Request.Status.DENIED)
-
-
-
-
-
-# class SenderRequestViewSet(viewsets.ModelViewSet):
-#     """
-#     User can send requests to other users, see them, edit and delete. 
-#     """
-#     queryset = Request.objects.all()
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     # set dynamic serializer choice, so creation allows new username but not in update 
-#     def get_serializer_class(self):
-#         if self.action in ['update', 'partial_update']:
-#             return SenderRequestUpdateSerializer
-#         return SenderRequestSerializer
-
-#     # only show request where user is the sender 
-#     def get_queryset(self):
-#         user = self.request.user
-#         return Request.objects.filter(sender=user)
-    
-    
-
-    
-# class ReceiverRequestViewSet(viewsets.ModelViewSet):
-#     """
-#     User can see, create, edit and delete only their own requests as receiver.
-#     """
-#     queryset = Request.objects.all()
-#     serializer_class = ReceiverRequestSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     # only show request where user is the receiver
-#     def get_queryset(self):
-#         user = self.request.user
-#         return Request.objects.filter(receiver=user)
