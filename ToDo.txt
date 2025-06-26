@@ -44,4 +44,11 @@ and I found recomandation for drf-spectacular so I am gonnat try that
 pip install drf-spectacular 
 https://drf-spectacular.readthedocs.io/en/latest/readme.html
 
-- request variants 
+i was about to start web but then decided to create tests 
+so when something doesnt work on website i know its not the 
+backend issue 
+
+when doing tests, i craetd user in setup, then i craete test case 
+for sucselful registration, and i couldnt' understand why i am keep getitng error
+manually it works, then i use print method for error msg to realzie that 
+user already exits in setup because username has to be unique 
