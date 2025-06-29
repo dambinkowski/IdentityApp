@@ -52,3 +52,33 @@ when doing tests, i craetd user in setup, then i craete test case
 for sucselful registration, and i couldnt' understand why i am keep getitng error
 manually it works, then i use print method for error msg to realzie that 
 user already exits in setup because username has to be unique 
+
+i spend so much time already writing tests, i had more errors writing tests wrong then
+the app i was thinknig if there is some automatic testing 
+i found schematics but then I realize, tests i wanted to make
+are very specific, user action or app logic specific 
+what is the input and what the result should be 
+so I went back to writing them myself... 
+
+
+okay making tests 
+i realized that often is 404 for not found instead of unathoridez of forbidden, becasuse 
+I use safety by not allowing user to ever be able to write a sender as input when creating the request 
+or accesing request where sender 
+I realzied my issue was that it return empty set 
+deep dive into why is it empty set [] 200ok, then reading how it runs global permissions not object permission 
+then i decided to leave it 
+
+so i discovered has_object_permission only runs on Retrive/Update/Destroy, 
+I thought when I am setting permission on the object any action with this object only permission allows to ever view it 
+but list does not work like that, it does only check global has_permission, so to protect the view, 
+filter what query set should return, and only filter data will show, so if user is trying 
+to find something using pk, and I add filetr, that user has to be X it will return 404, because 
+there is no match for that, but its not there is something like that but you don't have access to it 
+I wonder if i should do explicit, user gave this pk for request,
+its different then I first assumed but I guess it does make sense, I did start to research how to make 
+forbidden, by adding some logic, then decided to stick to default, jus tests are going to be different with 
+no found , or empty set, but again as long as data is invisible, and it has approach that 
+- its not:  server has the resource you don't have access to it 
+its 
+- not of the resource that you have access too has those parameters 
