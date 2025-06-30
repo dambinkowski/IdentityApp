@@ -694,7 +694,7 @@ class RequestsSendTests(APITestCase):
 
 # Received 
 
-def RequestsReceiveTests(APITestCase):
+class RequestsReceiveTests(APITestCase):
     def setUp(self):
         # I need at least two users to test requests between them
         # Create valid user credentials
@@ -754,6 +754,20 @@ def RequestsReceiveTests(APITestCase):
             request_reasoning='Dental office data request.',
         )
 
+        # create request identity variant for request1
+        self.request_identity_variant1 = RequestIdentityVariant.objects.create(
+            request=self.request1,
+            label='First Name in Polish',
+            context='First name in Polish language.',
+        )
+
+        # create profile identity variant for user2
+        self.profile_identity_variant1 = ProfileIdentityVariant.objects.create(
+            user=self.user2,
+            label='First Name in Polish',
+            context='First name in Polish language.',
+        )
+
         # Define URLs for requests
         self.request_receive_list_url = reverse('request-receive-list')
         self.request_receive_detail_url = lambda pk: reverse('request-receive-detail', args=[pk]) 
@@ -763,21 +777,204 @@ def RequestsReceiveTests(APITestCase):
         self.request_receive_deny_url = lambda pk: reverse('request-receive-deny', args=[pk])       
 
     # user can see list of received requests
+    def test_user_can_see_list_of_received_requests(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # get received requests
+        response = self.client.get(self.request_receive_list_url)
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should be a list
+        self.assertIsInstance(response.json(), list)
+        # response data should have the created request
+        self.assertGreater(len(response.json()), 0)
+        # check if the created request is in the response data
+        received_request = response.json()[0]
+        self.assertEqual(received_request['sender_username'], self.valid_username1)
+        self.assertEqual(received_request['request_reasoning'], 'Dental office data request.')  
+
     # user can not see other  users list of received requests 
+    def test_user_cannot_see_other_users_list_of_received_requests(self):
+        # user3 can not see user2 received requests, as she is not receiver    
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password2)
+        # get received requests
+        response = self.client.get(self.request_receive_list_url)
+        # response should be 200 OK, because its correct request 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response should be list, but it should be empy, because the only request in database is from user1 to user2
+        # and user3 should not be able to see it 
+        self.assertIsInstance(response.json(), list)
+        self.assertEqual(len(response.json()), 0)
+
     # stranger cannot see users received requests
+    def test_stranger_cannot_see_users_received_requests(self):
+        # get received requests without logging in
+        response = self.client.get(self.request_receive_list_url)
+        # response should be 401 Unauthorized 
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     # user can see details of their received requests
-    # user can not see other users received requests, as they are not receiver
+    def test_user_can_see_details_of_their_received_requests(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # get details of the received request
+        response = self.client.get(self.request_receive_detail_url(1))  # request id is 1, as it is the first request created in setup
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK) 
+        # response data should have the created request details
+        self.assertIn('sender_username', response.json())
+        self.assertEqual(response.json()['sender_username'], self.valid_username1)
+        self.assertIn('request_reasoning', response.json())
+        self.assertEqual(response.json()['request_reasoning'], 'Dental office data request.')
+        # request detail also has list of request identity variants, so i will check if it is there
+        self.assertIn('request_identity_variants', response.json())
+        # request identity variants should be a list
+        self.assertIsInstance(response.json()['request_identity_variants'], list)
+        # request identity variants should have at least one item, as we created one in setup
+        self.assertGreater(len(response.json()['request_identity_variants']), 0)
+        # check if the created request identity variant is in the response data
+        created_request_identity_variant = response.json()['request_identity_variants'][0]
+        self.assertEqual(created_request_identity_variant['label'], self.request_identity_variant1.label)
+        self.assertEqual(created_request_identity_variant['context'], self.request_identity_variant1.context)
+
+    # user cannot see details of other users received requests, as they are not receiver
+    def test_user_cannot_see_details_of_other_users_received_requests(self):    
+        # Ezma (user3) can not see user2 received requests, as she is not receiver    
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # get details of the received request
+        response = self.client.get(self.request_receive_detail_url(1))
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # stranger cannot see users received requests details
+    def test_stranger_cannot_see_users_received_requests_details(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # get details of the received request
+        response = self.client.get(self.request_receive_detail_url(1))  # request id is 1 
+        self.client.logout()  # log out user2
+        # now try to get details as stranger
+        response = self.client.get(self.request_receive_detail_url(1))
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     # user can accept their received request
-    # uces can not accept others users requests 
+    def test_user_can_accept_their_received_request(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # accept the received request
+        response = self.client.put(self.request_receive_accept_url(1))  # request id is 1 
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should have the updated request status
+        self.assertIn('status', response.json())
+        self.assertEqual(response.json()['status'], 'accepted')
+
+    # user can not accept others users requests 
+    def test_user_cannot_accept_other_users_received_request(self):
+        # Ezma can not accept the request for user 2   
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # accept the received request
+        response = self.client.put(self.request_receive_accept_url(1))  # request id is 1 
+        # response should be 404 Not Found, since user 3  does not even see that request 
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # stranger cannot accept users received requests
+    def test_stranger_cannot_accept_users_received_requests(self):
+        # user 2 request is trying to be accepted by stranger
+        response = self.client.put(self.request_receive_accept_url(1))
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     # user can deny their received request 
+    def test_user_can_deny_their_received_request(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # deny the received request
+        response = self.client.put(self.request_receive_deny_url(1))  # request id is 1 
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should have the updated request status
+        self.assertIn('status', response.json())
+        self.assertEqual(response.json()['status'], 'denied')
+
     # user can not deny other users requests
+    def test_user_cannot_deny_other_users_received_request(self):
+        # Ezma can not deny the request for user 2   
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # deny the received request
+        response = self.client.put(self.request_receive_deny_url(1))  # request id is 1 
+        # response should be 404 Not Found, since user 3 does not even see that request 
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # stranger cannot deny users received requests
+    def test_stranger_cannot_deny_users_received_requests(self):
+        # user 2 request is trying to be denied by stranger
+        response = self.client.put(self.request_receive_deny_url(1))
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # user can see requequest identity variants list, for request 
+    def test_user_can_see_request_identity_variants_for_their_received_requests(self):  
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # get request identity variants for received requests
+        response = self.client.get(self.request_receive_request_identity_variant_list_url(1))
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should be a list
+        self.assertIsInstance(response.json(), list)
+        # response data should have the created request identity variant
+        self.assertGreater(len(response.json()), 0)
+        # check if the created request identity variant is in the response data
+        created_request_identity_variant = response.json()[0]
+        self.assertEqual(created_request_identity_variant['label'], self.request_identity_variant1.label)
+        self.assertEqual(created_request_identity_variant['context'], self.request_identity_variant1.context)       
+
+    # user cannot see request identity variants for other users  
+    def test_user_cannot_see_request_identity_variants_for_other_users_received_requests(self):
+        # user3 Ezma tries to see user2 identity variants for request their received
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # get request identity variants for received requests
+        response = self.client.get(self.request_receive_request_identity_variant_list_url(1))
+        # response should empty list, since there is no resources to show that user 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsInstance(response.json(), list)
+        self.assertEqual(len(response.json()), 0)
+
+    # stranger cannot see users request identity variants for received requests
+    def test_stranger_cannot_see_users_request_identity_variants_for_received_requests(self):
+        # get request identity variants for received requests without logging in
+        response = self.client.get(self.request_receive_request_identity_variant_list_url(1))
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     # user can link request identity variants with profile identity variants
+    def test_user_can_link_request_identity_variants_with_profile_identity_variants(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(
+            self.request_receive_request_identity_variant_detail_url(1, 1),
+            {'profile_identity_variant_id': 1}
+        )
+        # response should be 200 OK
+        print('test_user_can_link_request_identity_variants_with_profile_identity_variants : ')
+        print(response.json())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+
+
     # user can not link other users request identity variants with profile identity variants
+
     # stranger cannot link users request identity variants with profile identity variants
+
     # user can not link request identity variants to requests that are pending or declined
+
     # when user changes variant from accepted to decilned, links should be wiped out 
 
   
