@@ -1232,11 +1232,11 @@ class RequestsReceiveTests(APITestCase):
         # response should be 401 Unauthorized
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # user can change their mind and accept request that is declined 
-    def test_user_can_accept_request_that_is_declined(self):
+    # user can change their mind and accept request that is denied
+    def test_user_can_accept_request_that_is_denied(self):
         # post login user2
         self.client.login(username=self.valid_username2, password=self.valid_password2)
-        # first decline the request
+        # first deny the request
         response = self.client.put(self.request_receive_deny_url(1))  # request id is 1 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # now accept the request
@@ -1247,18 +1247,98 @@ class RequestsReceiveTests(APITestCase):
         self.assertIn('status', response.json())
         self.assertEqual(response.json()['status'], 'accepted')
 
-    # user can not accept other users request that is declined
-    # stranger can not accept users request that is declined
+    # user can not accept other users request that is denied
+    def test_user_cannot_accept_other_users_request_that_is_denied(self):
+        # post login user2 and deny request
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_deny_url(1))  # request id is 1 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now Ezma tries to maliciously accept user2 request
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.put(self.request_receive_accept_url(1))
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    # stranger can not accept users request that is denied
+    def test_stranger_cannot_accept_users_request_that_is_denied(self):
+          # post login user2 and deny request
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_deny_url(1))  # request id is 1 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now try to accetp the request as stranger, without logging in 
+        response = self.client.put(self.request_receive_accept_url(1))
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # user can decline request that is pending
-    # user can not decline other users request that is pending
-    # stranger can not decline users request that is pending
+    # user can deny request that is pending
+    def test_user_can_deny_request_that_is_pending(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # deny the received request
+        response = self.client.put(self.request_receive_deny_url(1))
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should have the updated request status
+        self.assertIn('status', response.json())
+        self.assertEqual(response.json()['status'], 'denied')
 
+    # user can not deny other users request that is pending
+    def test_user_cannot_deny_other_users_request_that_is_pending(self):
+        # Ezma (user3) can not deny user2 request  
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # try to deny the received request
+        response = self.client.put(self.request_receive_deny_url(1))
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # user can decline request that is accepted 
-    # user can not decline other users request that is accepted
-    # stranger can not decline users request that is accepted
+    # stranger can not deny users request that is pending
+    def test_stranger_cannot_deny_users_request_that_is_pending(self):
+        # now try to deny the request as stranger, without logging in
+        response = self.client.put(self.request_receive_deny_url(1))
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # user can change their minde and deny request that is accepted 
+    def test_user_can_deny_request_that_is_accepted(self):
+        # post login user2, and accept it 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))  # request id is 1 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # now deny the request
+        response = self.client.put(self.request_receive_deny_url(1))  # request id is 1 
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should have the updated request status
+        self.assertIn('status', response.json())
+        self.assertEqual(response.json()['status'], 'denied')
+
+    # user can not deny other users request that is accepted
+    def test_user_cannot_deny_other_users_request_that_is_accepted(self):
+        # post login user2, and accept it 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))  # request id is 1 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now Ezma tries to maliciously deny user2 request
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.put(self.request_receive_deny_url(1))
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # stranger can not deny users request that is accepted
+    def test_stranger_cannot_deny_users_request_that_is_accepted(self):
+        # post login user2, and accept it 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))  # request id is 1 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now try to deny the request as stranger, without logging in
+        response = self.client.put(self.request_receive_deny_url(1))
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # user can link request identity variant with profile identity variant for accepted request
     # user can not link other users request identity variant with profile identity variant for accepted request
