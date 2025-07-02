@@ -82,3 +82,39 @@ no found , or empty set, but again as long as data is invisible, and it has appr
 - its not:  server has the resource you don't have access to it 
 its 
 - not of the resource that you have access too has those parameters 
+
+as i was working on tests, i realized, i never run the feature of linking the profile identity with request
+i did it in admin page, and then it showed it request send 
+while doing tests i realze i keep getting error, first i thought its because the fields is read onlyt
+then i realzied its the issue with permisssions again because the nested object has no .receiver atribute 
+so permission class in trying to check permission 
+so I need to etither write new permission class for the nested object or in main permission add logic 
+
+of course I had to name one of the models - request - now it makes it confusing with django built in request 
+i realized that it also shouldnt work in send because i used the same approach, 
+then realized i didnt test for that and indeed it does not work
+so i need to rebuild security system, add test for request sends, and finish request recevie identity varianst 
+
+so basically i can not run has permission - to detrmine if its sender or receiver becuase that parts 
+of DRF runs before even trying to get any obects, now if that passes, object is return and now 
+I can check permision between object and a user, because drf has run the query, got the object and
+has object info, that info now contains who is sender and who is receiver, 
+
+okay great, now I have permission on the object, but i have request-identity-variant, where parent is 
+request, os request-identity-variant does not users information of who is sender or receiver, 
+because that info is in the request model, but update/retrive/destroy in the view still uses 
+get_query_set so if user where to get details for that item, or update it 
+it just wouldn't be fount because its not accessible, question is 
+should i make it explicit or not 
+
+so now I am used to checking hasattr because its what i need when I gave custom attributes in project before 
+but also there has to be more readible way what if 2 objects have same attribute etc. so I just used 
+python isInstance, to see what object is, if its Request check request.sender with request.user 
+if its RequestIdentityVariant get RequestIdentityVariant.Request.sender 
+
+i got to the point i have over 64 tests, and it takes 18 seconds to run it 
+i like to make comments of what tests i need to do before coding, so I realzied i still have 
+over at least 20 tests to do, I am not gona wait as I code, i remember from class i can specify which test i want to run
+but typing it in is long so 
+so did quick research how to make bash command that I can just add parametr which will be test name 
+

@@ -1,23 +1,69 @@
-from rest_framework import permissions
 from rest_framework.permissions import BasePermission
+from core.models import Request, RequestIdentityVariant
 
 class IsProfileOwner(BasePermission):
     """
-    Custom permission to only allow profile owners to view or edit their profiles.
+    Checks if user is logged in and is owner ProfileIdentityVariant
     """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+    
     def has_object_permission(self, request, view, obj):
+        # in this case, obj is a ProfileIdentityVariant instance
         return obj.user == request.user
 
 class IsRequestSender(BasePermission):
     """
-    Custom permission to only allow the sender of a request to view or edit it.
+    Checks if user is logged in and is the sender of the Request
     """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+    
     def has_object_permission(self, request, view, obj):
-        return obj.sender == request.user
+        # in this case, obj is a Request instance or a RequestIdentityVariant instance
+        # variable request is the DRF request object that has request.user - as logged in user who is making the request to access the view
+        if isinstance(obj, Request):
+            # if obj is a Request instance, return true if Request.sender matches the logged in user
+            return obj.sender == request.user
+        
+        if isinstance(obj, RequestIdentityVariant):
+            # if obj is a RequestIdentityVariant instance, get parent Request to check who is sender and compare it with logged in user
+            return obj.request.sender == request.user
+
+        # there sohuld be no other cases, but if there are, return False untill added 
+        return False
+    
+    
     
 class IsRequestReceiver(BasePermission):
     """
-    Custom permission to only allow the receiver to see requested views, accept or deny requests. And link with their personal profile. 
+    Checks if user is logged in and is the receiver of the Request
     """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+    
     def has_object_permission(self, request, view, obj):
-        return obj.receiver == request.user
+        # in this case, obj is a Request instance or a RequestIdentityVariant instance
+        # variable request is the DRF request object that has request.user - as logged in user who is making the request to access the view
+        if isinstance(obj, Request):
+            # if obj is a Request instance, return true if Request.sender matches the logged in user
+            return obj.receiver == request.user
+        
+        if isinstance(obj, RequestIdentityVariant):
+            # if obj is a RequestIdentityVariant instance, get parent Request to check who is sender and compare it with logged in user
+            return obj.request.receiver == request.user
+
+        # there sohuld be no other cases, but if there are, return False untill added 
+        return False
+    
+# class IsAccepted(BasePermission):
+#     """
+#     Checks if request is accepted
+#     """
+#     def has_permission(self, request, view):
+#         return request.user.is_authenticated
+    
+#     def has_object_permission(self, request, view, obj):
+#         # in this case, obj is a Request instance
+#         return obj.status == Request.Status.ACCEPTED
+    

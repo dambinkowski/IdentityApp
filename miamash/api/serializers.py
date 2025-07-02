@@ -44,7 +44,7 @@ class RequestSendListCreateSerializer(serializers.ModelSerializer):
         return request_instance
     
 class RequestSendRequestIdentityVariantSerializer(serializers.ModelSerializer):
-    user_provided_variant = serializers.CharField(source='profile_link.variant', read_only=True)
+    user_provided_variant = serializers.CharField(source='profile_link.variant', read_only=True, allow_null=True)
     class Meta:
         model = RequestIdentityVariant
         fields = ['id', 'label', 'context', 'user_provided_variant']
@@ -103,13 +103,19 @@ class RequestReceiveDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'sender_username', 'created_at', 'status', 'request_identity_variants']
 
 class RequestReceiveRequestIdentityVariantDetailSerializer(serializers.ModelSerializer):
-    user_provided_variant = serializers.CharField(source='profile_link.variant', read_only=True)
+    user_provided_variant = serializers.CharField(source='profile_link.variant', read_only=True, allow_null=True)
+    link_to_id_profile_identity_variant = serializers.PrimaryKeyRelatedField(
+        source='profile_link',
+        queryset=ProfileIdentityVariant.objects.all(),
+        allow_null=True,
+        required=False
+    )
     
     class Meta:
         model = RequestIdentityVariant
-        fields = ['id', 'label', 'context', 'profile_link', 'user_provided_variant']
+        fields = ['id', 'label', 'context', 'link_to_id_profile_identity_variant', 'user_provided_variant']
         read_only_fields = ['id', 'label', 'context', 'user_provided_variant']
-    
+        
 class RequestReceiveStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request

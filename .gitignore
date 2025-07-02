@@ -8,3 +8,14 @@ miamash/core/migrations/__pycache__/0002_alter_request_receiver_alter_request_st
 miamash/miamash/__pycache__/settings.cpython-313.pyc
 miamash/miamash/__pycache__/urls.cpython-313.pyc
 miamash/db.sqlite3
+miamash/api/__pycache__/permissions.cpython-313.pyc
+miamash/api/__pycache__/permissions.cpython-313.pyc
+miamash/api/__pycache__/serializers.cpython-313.pyc
+miamash/api/__pycache__/tests.cpython-313.pyc
+miamash/api/__pycache__/urls.cpython-313.pyc
+miamash/api/__pycache__/views.cpython-313.pyc
+miamash/api/__pycache__/permissions.cpython-313.pyc
+miamash/api/__pycache__/serializers.cpython-313.pyc
+miamash/api/__pycache__/tests.cpython-313.pyc
+miamash/api/__pycache__/urls.cpython-313.pyc
+miamash/api/__pycache__/views.cpython-313.pyc

@@ -10,7 +10,7 @@ class ProfileIdentityVariantListCreateAPIView(generics.ListCreateAPIView):
     User can see their profile identity variants and create new ones.
     """
     serializer_class = ProfileIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsProfileOwner]
 
     # for list query where logged in user is the owner only 
     def get_queryset(self):
@@ -24,7 +24,7 @@ class ProfileIdentityVariantDetailAPIView(generics.RetrieveUpdateDestroyAPIView)
     User can see, edit and delete their profile identity variants.
     """
     serializer_class = ProfileIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated, IsProfileOwner]
+    permission_classes = [IsProfileOwner]
 
     # for detail query where logged in user is the owner only 
     def get_queryset(self):
@@ -38,7 +38,7 @@ class RequestSendListCreateAPIView(generics.ListCreateAPIView):
     User can see sent-requests and create new ones.
     """
     serializer_class = RequestSendListCreateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsRequestSender]
 
     # for list query where logged in user is the sender only 
     def get_queryset(self):
@@ -52,7 +52,7 @@ class RequestSendDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     User can see, edit and delete their sent-requests.
     """
     serializer_class = RequestSendDetailSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestSender]
+    permission_classes = [IsRequestSender]
 
     # for detail query where logged in user is the sender only 
     def get_queryset(self):
@@ -63,7 +63,7 @@ class RequestSendRequestIdentityVariantListCreateAPIView(generics.ListCreateAPIV
     User can see and create request identity variants for their sent-requests.
     """
     serializer_class = RequestSendRequestIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestSender]
+    permission_classes = [IsRequestSender]
 
     def get_queryset(self):
         request_id = self.kwargs['pk']
@@ -79,7 +79,7 @@ class RequestSendRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateDest
     User can see, edit and delete request identity variants for their sent-requests.
     """
     serializer_class = RequestSendRequestIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestSender]
+    permission_classes = [IsRequestSender]
 
     def get_queryset(self):
         request_id = self.kwargs['pk']
@@ -94,7 +94,7 @@ class RequestReceiveListAPIView(generics.ListAPIView):
     User can see received requests.
     """
     serializer_class = RequestReceiveListSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsRequestReceiver]
 
     # for list query where logged in user is the receiver only 
     def get_queryset(self):
@@ -105,7 +105,7 @@ class RequestReceiveDetailAPIView(generics.RetrieveAPIView):
     User can see details of a received request.
     """
     serializer_class = RequestReceiveDetailSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
+    permission_classes = [IsRequestReceiver]
 
     # for detail query where logged in user is the receiver only 
     def get_queryset(self):
@@ -116,7 +116,7 @@ class RequestReceiveRequestIdentityVariantListAPIView(generics.ListAPIView):
     User can see request identity variants for their received requests.
     """
     serializer_class = RequestReceiveRequestIdentityVariantSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
+    permission_classes = [IsRequestReceiver]
 
     def get_queryset(self):
         request_id = self.kwargs['pk']
@@ -127,7 +127,7 @@ class RequestReceiveRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateA
     User can see and edit request identity variants for their received requests.
     """
     serializer_class = RequestReceiveRequestIdentityVariantDetailSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
+    permission_classes = [IsRequestReceiver]
     lookup_url_kwarg = 'request_identity_variant_pk'
 
     def get_queryset(self):
@@ -139,7 +139,7 @@ class RequestReceiveAcceptAPIView(generics.UpdateAPIView):
     User can accept their received request.
     """
     serializer_class = RequestReceiveStatusSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
+    permission_classes = [IsRequestReceiver]
     lookup_url_kwarg = 'pk'
 
     def get_queryset(self):
@@ -154,7 +154,7 @@ class RequestReceiveDenyAPIView(generics.UpdateAPIView):
     User can deny their received request.
     """
     serializer_class = RequestReceiveStatusSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRequestReceiver]
+    permission_classes = [IsRequestReceiver]
     lookup_url_kwarg = 'pk'
 
     def get_queryset(self):
