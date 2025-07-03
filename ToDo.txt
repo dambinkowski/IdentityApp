@@ -118,3 +118,13 @@ over at least 20 tests to do, I am not gona wait as I code, i remember from clas
 but typing it in is long so 
 so did quick research how to make bash command that I can just add parametr which will be test name 
 
+maybe test driven development is good, i coppied and pasted permisisons from request, and of course i change to
+compere with status.ACCEPTED not with user to be receiver, but i did'nt change left side, so I was compering 
+using tests i noticed this comes back false when it should be true, 
+
+next functionaliny is tthat when user changes their mind and decides to deny request, their data should not be shared anymore
+so I was going to loop over requestidentityvariants of request and wipe the links out, but then I was thinking if i woudl make query 
+call for each instance, in Express i was trying to make as little queries as posible and I would have such an action in one query 
+so I looked and Django does have bulk update which is much more scallable 
+
+

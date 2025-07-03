@@ -56,14 +56,19 @@ class IsRequestReceiver(BasePermission):
         # there sohuld be no other cases, but if there are, return False untill added 
         return False
     
-# class IsAccepted(BasePermission):
-#     """
-#     Checks if request is accepted
-#     """
-#     def has_permission(self, request, view):
-#         return request.user.is_authenticated
+class IsRequestAccepted(BasePermission):
+    """
+    Check if request status is ACCEPTED
+    """
     
-#     def has_object_permission(self, request, view, obj):
-#         # in this case, obj is a Request instance
-#         return obj.status == Request.Status.ACCEPTED
-    
+    def has_object_permission(self, request, view, obj):
+        # if its Request instance 
+        if isinstance(obj, Request):
+            # if obj is a Request instance, return true if Request.sender matches the logged in user
+            return obj.receiver == Request.Status.ACCEPTED
+        # if its RequestIdentityVariant instance
+        if isinstance(obj, RequestIdentityVariant):
+            # if obj is a RequestIdentityVariant instance, get parent Request to check who is sender and compare it with logged in user
+            return obj.request.status == Request.Status.ACCEPTED
+
+        return False

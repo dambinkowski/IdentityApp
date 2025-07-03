@@ -439,7 +439,7 @@ class RequestsSendTests(APITestCase):
 
     # user cannot see details of other users sent requests, as they are not sender
     def test_user_cannot_see_details_of_other_users_sent_requests(self):
-        # malicious Ezma (user3) can not see user1 detail sent request, as she is not a sender 
+        # malicious Ezma (user3) can not see user1 detail sent request, as user3 is not a sender 
         # post login user1
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         # post create request
@@ -493,7 +493,7 @@ class RequestsSendTests(APITestCase):
 
     # user cannot update other users sent requests, as they are not sender
     def test_user_cannot_update_other_users_sent_requests(self):
-        # Ezma  can not update user1 sent requests, as she is not sender
+        # Ezma  can not update user1 sent requests, as user3 is not sender
         # post login user1
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         # post create request
@@ -540,7 +540,7 @@ class RequestsSendTests(APITestCase):
 
     # other user cannot delete users sent requests, as they are not sender
     def test_user_cannot_delete_other_users_sent_requests(self):
-        # user3 can not delete user1 sent requests, as she is not sender    
+        # user3 can not delete user1 sent requests, as user3 is not sender    
         # post login user1
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         # post create request
@@ -593,7 +593,7 @@ class RequestsSendTests(APITestCase):
 
     # user cannot create request identity variants for other users sent requests, as they are not sender
     def test_user_cannot_create_request_identity_variants_for_other_users_sent_requests(self):  
-        # Ezma user3 can not create request identity variants for user1 sent requests, as she is not sender    
+        # Ezma user3 can not create request identity variants for user1 sent requests, as user3 is not sender    
         # post login user1
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         # post create request
@@ -710,7 +710,7 @@ class RequestsSendTests(APITestCase):
 
     # user can not see other users request identity variants detail
     def test_user_cannot_see_other_users_request_identity_variants_detail(self):
-        # Ezma (user3) can not see user1 request identity variants detail, as she is not sender    
+        # Ezma (user3) can not see user1 request identity variants detail, as user3 is not sender    
         # login user 1, create request and variant 
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
@@ -769,7 +769,7 @@ class RequestsSendTests(APITestCase):
 
     # user can not update other users request identity variant
     def test_user_cannot_update_other_users_request_identity_variant(self):
-        # Ezma (user3) can not update user1 request identity variant, as she is not sender    
+        # Ezma (user3) can not update user1 request identity variant, as user3 is not sender    
         # post login user1, create request and variant 
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
@@ -879,7 +879,7 @@ class RequestsSendTests(APITestCase):
 
     # user can not delete other users request identity variant
     def test_user_cannot_delete_other_users_request_identity_variant(self):
-        # Ezma (user3) can not delete user1 request identity variant, as she is not sender    
+        # Ezma (user3) can not delete user1 request identity variant, as user3 is not sender    
         # post login user1, create request and variant 
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
@@ -986,6 +986,14 @@ class RequestsReceiveTests(APITestCase):
             user=self.user2,
             label='First Name in Polish',
             context='First name in Polish language.',
+            variant='Michal'
+        )
+
+        self.profile_identity_variant2 = ProfileIdentityVariant.objects.create(
+            user=self.user2,
+            label='First Name in Polish, Polish alphabet',
+            context='My first name in Polish language, but also with Polish alphabet.',
+            variant='Michał'
         )
 
         # Define URLs for requests
@@ -1015,7 +1023,7 @@ class RequestsReceiveTests(APITestCase):
 
     # user can not see other  users list of received requests 
     def test_user_cannot_see_other_users_list_of_received_requests(self):
-        # user3 can not see user2 received requests, as she is not receiver    
+        # user3 can not see user2 received requests, as user3 is not receiver    
         # post login user3
         self.client.login(username=self.valid_username3, password=self.valid_password2)
         # get received requests
@@ -1060,7 +1068,7 @@ class RequestsReceiveTests(APITestCase):
 
     # user cannot see details of other users received requests, as they are not receiver
     def test_user_cannot_see_details_of_other_users_received_requests(self):    
-        # Ezma (user3) can not see user2 received requests, as she is not receiver    
+        # Ezma (user3) can not see user2 received requests, as user3 is not receiver    
         # post login user3
         self.client.login(username=self.valid_username3, password=self.valid_password3)
         # get details of the received request
@@ -1174,21 +1182,19 @@ class RequestsReceiveTests(APITestCase):
         # response should be 401 Unauthorized
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # user receiver can see request identity variant detail for their received requests
-    def test_user_receiver_can_see_request_identity_variant_detail_for_their_received_requests(self):
+    # user receiver can not see request identity variant detail for their received request that is pending 
+    def test_user_receiver_can_not_see_request_identity_variant_detail_for_their_received_requests_that_are_pending(self):
         # post login user2
         self.client.login(username=self.valid_username2, password=self.valid_password2)
         # get request identity variant detail for received requests
         response = self.client.get(self.request_receive_request_identity_variant_detail_url(1, 1))
-        # response should be 200 OK
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # response data should have the created request identity variant details
-        self.assertIn('label', response.json())
+        # response should be 403 forbidden 
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-    # user can not see other users request identity variant detail ( using receiver end point )
-    def test_user_cannot_see_other_users_request_identity_variant_detail(self): 
-        # Ezma (user3) can not see user2 request identity variant detail, as she is not receiver    
+    # user can not see other users request identity variant detail ( using receiver end point ) that is pending 
+    def test_user_cannot_see_other_users_request_identity_variant_detail_pending(self): 
+        # Ezma (user3) can not see user2 request identity variant detail, as user3 is not receiver    
         # post login user3
         self.client.login(username=self.valid_username3, password=self.valid_password3)
         # try to get request identity variant detail
@@ -1196,12 +1202,53 @@ class RequestsReceiveTests(APITestCase):
         # response should be 404 Not Found, as user3 is not receiver of this request
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # stranger can not see users request identity variant detail 
-    def test_stranger_cannot_see_users_request_identity_variant_detail(self):
+    # stranger can not see users request identity variant detail  that is pending 
+    def test_stranger_cannot_see_users_request_identity_variant_detail_pending(self):
         # requestId is 1, and request identity variant id is 1
         response = self.client.get(self.request_receive_request_identity_variant_detail_url(1, 1))
         # response should be 401 Unauthorized
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+    # user can not see request identity variant detail, that is declined 
+    def test_user_receiver_can_not_see_request_identity_variant_detail_for_their_received_requests_that_are_denied(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # first deny the request
+        response = self.client.put(self.request_receive_deny_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # now try to get the request identity variant detail
+        response = self.client.get(self.request_receive_request_identity_variant_detail_url(1, 1))
+        # response should be 403 Forbidden, as the request is denied
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # user can not see other users request identity variant detail ( using receiver end point ) that is denied
+    def test_user_cannot_see_other_users_request_identity_variant_detail_denied(self):
+        # log in as user 2 and deny the request first 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_deny_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now Ezma (user3) tries to see user2 request identity variant detail,
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # now try to get request identity variant detail
+        response = self.client.get(self.request_receive_request_identity_variant_detail_url(1, 1))
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # stranger can not see users request identity variant detail  that is denied   
+    def test_stranger_cannot_see_users_request_identity_variant_detail_denied(self):
+        # post login user2 and deny the request first 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_deny_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now try to get request identity variant detail as stranger
+        response = self.client.get(self.request_receive_request_identity_variant_detail_url(1, 1))
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
     # user can accept request that is pending 
     def test_user_can_accept_request_that_is_pending(self):
@@ -1337,31 +1384,224 @@ class RequestsReceiveTests(APITestCase):
         self.client.logout()  # log out user2
         # now try to deny the request as stranger, without logging in
         response = self.client.put(self.request_receive_deny_url(1))
-        # response should be 404 Not Found, as user3 is not receiver of this request
+        # should be 401 since user is not authenticated 
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # user can see request identity variant detail for accepted request
+    def test_user_can_see_request_identity_variant_detail_for_accepted_request(self):
+        # post login user2 and accept request 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # now get request identity variant detail for accepted request  
+        response = self.client.get(self.request_receive_request_identity_variant_detail_url(1, 1))
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should have the created request identity variant details
+        self.assertIn('label', response.json())
+        self.assertEqual(response.json()['label'], self.request_identity_variant1.label)
+        self.assertIn('context', response.json())
+        self.assertEqual(response.json()['context'], self.request_identity_variant1.context)
+    
+    # user can not see other users request identity variant detail ( using receiver end point ) for accepted request
+    def test_user_cannot_see_other_users_request_identity_variant_detail_for_accepted_request(self):
+        # log in as user2, accept request, loggout, 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()
+        # now Ezma tries to see users2 request identity variant detail,
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        response = self.client.get(self.request_receive_request_identity_variant_detail_url(1, 1))
+        # response should be 404 Not Found, as user1 is not receiver of this request and there is no resource to show 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # user can link request identity variant with profile identity variant for accepted request
+    def test_user_can_link_request_identity_variant_with_profile_identity_variant_for_accepted_request(self):
+        # post login user2 and accept request 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # now link request identity variant with profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should have the updated request identity variant details
+        self.assertIn('link_to_id_profile_identity_variant', response.json())
+        # now the profile id is 1 
+        self.assertEqual(response.json()['link_to_id_profile_identity_variant'], 1)
+        # and part that is shared with the request person is the variant, so it should be the same as profile identity variant - variant field 
+        self.assertEqual(response.json()['user_provided_variant'], self.profile_identity_variant1.variant)
+        print(" code line 1436 ")
+        print(response.json()['user_provided_variant'])
+
     # user can not link other users request identity variant with profile identity variant for accepted request
+    def test_user_cannot_link_other_users_request_identity_variant_with_profile_identity_variant_for_accepted_request(self):
+        # post login user2 and accept request 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now Ezma tries to link user2 request identity variant with profile identity variant
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response should be 404 Not Found
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # stranger can not link users request identity variant with profile identity variant for accepted request
+    def test_stranger_cannot_link_users_request_identity_variant_with_profile_identity_variant_for_accepted_request(self):
+        # post login user2 and accept request 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now try to link request identity variant with profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # repsponse should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # user can not link request identity variant with profile identity variant for pending request
+    def test_user_cannot_link_request_identity_variant_with_profile_identity_variant_for_pending_request(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # try to link request identity variant with profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response should be 403 Forbidden, as the request is pending
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     # user can not link other users request identity variant with profile identity variant for pending request
+    def test_user_cannot_link_other_users_request_identity_variant_with_profile_identity_variant_for_pending_request(self): 
+        # Ezma (user3) can not link user2 request identity variant with profile identity variant, as user3  is not receiver    
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # try to link request identity variant with profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # stranger can not link users request identity variant with profile identity variant for pending request
+    def test_stranger_cannot_link_users_request_identity_variant_with_profile_identity_variant_for_pending_request(self):
+        # try to link request identity variant with profile identity variant without logging in
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # user can not link request identity variant with profile identity variant for denied request
+    def test_user_cannot_link_request_identity_variant_with_profile_identity_variant_for_denied_request(self):
+        # post login user2 and deny request 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_deny_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # now try to link request identity variant with profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response should be 403 Forbidden, as the request is denied
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)   
+
     # user can not link other users request identity variant with profile identity variant for denied request
+    def test_user_cannot_link_other_users_request_identity_variant_with_profile_identity_variant_for_denied_request(self):
+        # login as user 2 and deny the request first
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_deny_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # now Ezma tries to link user2 request identity variant with profile identity variant
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # now try to link other users request identity variant with profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response sholuld be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
     # stranger can not link users request identity variant with profile identity variant for denied request
+    def test_stranger_cannot_link_users_request_identity_variant_with_profile_identity_variant_for_denied_request(self):
+        # login user 2, deny request, logout  
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_deny_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.logout()  # log out user2
+        # try to link without logging in 
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # user can update link field of request identity variant to link it with different profile identity variant
+    def test_user_can_update_link_field_of_request_identity_variant_to_link_it_with_different_profile_identity_variant(self):
+        # post login user2 and accept request 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        response = self.client.put(self.request_receive_accept_url(1))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # now link request identity variant with profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # now update link field to link it with different profile identity variant
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 2})
+        # response should be 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response data should have the updated request identity variant details
+        self.assertIn('link_to_id_profile_identity_variant', response.json())
+        # now the profile id is 2 
+        self.assertEqual(response.json()['link_to_id_profile_identity_variant'], 2)
+        # and part that is shared with the request person is the variant, so it should be the same as profile identity variant - variant field 
+        self.assertEqual(response.json()['user_provided_variant'], self.profile_identity_variant2.variant)
+
     # other user can not update link field of request identity variant to link it with profile identity variant
-    # stranger can not update link field of request identity variant to link it with profile identity variant
+    def test_other_user_cannot_update_link_field_of_request_identity_variant_to_link_it_with_profile_identity_variant(self):
+        # login user 3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # try to update link field
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 2})
+        # response should be 404 Not Found, as user3 is not receiver of this request, so there is no resource to even show 
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # stranger can not update link field of request identity variant to link it with profile identity variant      
+    def test_stranger_cannot_update_link_field_of_request_identity_variant_to_link_it_with_profile_identity_variant(self):
+        # try to update link field without logging in
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 2})
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # user receiver can not update request identity variant detail other thenk link field 
+    def test_user_receiver_can_not_update_request_identity_variant_detail_other_than_link_field(self):
+        # post login user2
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        # try to update request identity variant detail
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'label': 'new label'})
+        # response should be 403 Forbidden, as the request is pending
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     # user (that is not a sender ) can not update other users request identity variant detail ( using receiver end point )
+    def test_user_cannot_update_other_users_request_identity_variant_detail(self):
+        # Ezma (user3) can not update user2 request identity variant detail, as user3 is not receiver    
+        # post login user3
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        # try to update request identity variant detail
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'label': 'new label'})
+        # response should be 404 Not Found, as user3 is not receiver of this request
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # stranger can not update users request identity variant detail 
+    def test_stranger_cannot_update_users_request_identity_variant_detail(self):
+        # try to update request identity variant detail without logging in
+        response = self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'label': 'new label'})
+        # response should be 401 Unauthorized
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # test if links get cleaned, when user is changing from accepted to denied
-
-  
-  
-
+    def test_links_get_disconnected_upon_denying_the_request(self):
+        # post login user2 and accept request, and link variant 
+        self.client.login(username=self.valid_username2, password=self.valid_password2)
+        self.client.put(self.request_receive_accept_url(1))
+        self.client.patch(self.request_receive_request_identity_variant_detail_url(1, 1), {'link_to_id_profile_identity_variant': 1})
+        # get the link data that sender sees 
+        response = self.client.get(self.request_receive_request_identity_variant_list_url(1))
+        shared_variant = response.json()[0].get('user_provided_variant')
+        self.assertEqual(shared_variant, self.profile_identity_variant1.variant)
+        print("shared_variant: ", shared_variant)
+        # now deny the request, data should be wiped and no longer shared 
+        self.client.put(self.request_receive_deny_url(1))
+        response = self.client.get(self.request_receive_request_identity_variant_list_url(1))
+        cleaned_variant = response.json()[0].get('user_provided_variant')
+        # now cleaned variant shoud be different then shared variant, just by denying the request
+        self.assertNotEqual(shared_variant, cleaned_variant)
+        # and shared cleaned_variant shoud be None
+        self.assertIsNone(cleaned_variant)
+        # that means that just deying the request, destroy the link to users private information 

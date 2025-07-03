@@ -19,3 +19,6 @@ miamash/api/__pycache__/serializers.cpython-313.pyc
 miamash/api/__pycache__/tests.cpython-313.pyc
 miamash/api/__pycache__/urls.cpython-313.pyc
 miamash/api/__pycache__/views.cpython-313.pyc
+miamash/api/__pycache__/permissions.cpython-313.pyc
+miamash/api/__pycache__/tests.cpython-313.pyc
+miamash/api/__pycache__/views.cpython-313.pyc

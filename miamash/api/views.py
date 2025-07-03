@@ -127,7 +127,7 @@ class RequestReceiveRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateA
     User can see and edit request identity variants for their received requests.
     """
     serializer_class = RequestReceiveRequestIdentityVariantDetailSerializer
-    permission_classes = [IsRequestReceiver]
+    permission_classes = [IsRequestReceiver, IsRequestAccepted]
     lookup_url_kwarg = 'request_identity_variant_pk'
 
     def get_queryset(self):
@@ -162,4 +162,8 @@ class RequestReceiveDenyAPIView(generics.UpdateAPIView):
 
     def perform_update(self, serializer):
         request_instance = self.get_object()
+        # if request was previously accepted, wipe out the links first 
+        if request_instance.status == Request.Status.ACCEPTED:
+            RequestIdentityVariant.objects.filter(request=request_instance).update(profile_link=None)
+        # then set the status to DENIED
         serializer.save(request=request_instance, status=Request.Status.DENIED)
