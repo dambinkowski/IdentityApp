@@ -16,6 +16,7 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SITE_ID = 1
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # django sites framework
+    # django sites framework for allauth
     'django.contrib.sites',
 
     # third party 
@@ -57,7 +58,7 @@ INSTALLED_APPS = [
     'web',
     'api', 
 ]
-SITE_ID = 1
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -67,6 +68,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # allauth middleware
     'allauth.account.middleware.AccountMiddleware'
 ]
 
@@ -143,6 +146,16 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # allauth settings
+AUTHENTICATION_BACKENDS = [
+
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+
+]
+
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS   = ['username']  
 ACCOUNT_SIGNUP_FIELDS   = [
@@ -151,6 +164,11 @@ ACCOUNT_SIGNUP_FIELDS   = [
     'password1*',
     'password2*'
     ]
+
+# login redirect URL
+LOGIN_REDIRECT_URL = '/dashboard/'
+# logout redirect URL
+LOGOUT_REDIRECT_URL = '/'
 
 # REST framework settings
 REST_USE_JWT = True

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IdentityApp</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to IdentityApp</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'account_logout' %}">Logout</a></li>
+        </ul>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2025 Miamash</p>
+    </footer>
+</body>
+</html>

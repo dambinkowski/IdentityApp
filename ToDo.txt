@@ -127,4 +127,32 @@ so I was going to loop over requestidentityvariants of request and wipe the link
 call for each instance, in Express i was trying to make as little queries as posible and I would have such an action in one query 
 so I looked and Django does have bulk update which is much more scallable 
 
+deciding on next step still going back and forth with doing react 
+https://www.contentful.com/blog/htmx-react-use-cases/
+I have the api tested and secured, so I don't want to rewrite the logic, and testing and security for the views 
+but on the other hand react seems like unnesesesry since most logic is in the server side, and there is 
+no significant optimization to have it moved 
 
+okay already running into issues with allauth, i cant find the url patterns names -.- 
+
+reading all auth documentiation, I like they safety aproach that can not check if email hass acount 
+
+silly bug 
+i took hours trouble shooting why is my all-auth login page not showing, 
+i didn't set up profile/dashboard page becauese i did read documentiation 
+and it shoudl work right out of the box the signup and login page 
+so I took such a long time making sure everything is installed, 
+digged deep int example project from documentaion, and just went with 
+basic instalation example and it still did'nt work 
+then i realize that the silly mistake was that user was already logged in 
+because i was testing browsable api, and since I enabled django sessions for that 
+authentication of course stayed for web requests...
+so the reason it was not working its because it was redirecting to profile ( i customized it to dashobard later)
+hours of why is rediracting happening.... 
+anyways logged out using api, and there it was signup up page and login page worked like they supposed to 
+then I created dashboard page, made it login requeire mixin and once login through allouth redirec there
+in prototype i used funtion based views, but since i want to use inharitance for classes, 
+and take advantage of object oriented programiming i change to class view even for dashboard 
+
+my next step is to continue making web page endpoints 
+i will stay focused and not do any css until every functionality is done 

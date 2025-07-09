@@ -1,9 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 from . import views 
 
+
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('dashboard/', views.dashboard, name='dashboard'),
-    path('accounts/signup/', views.SignUpView.as_view(), name='signup'),
-    path('prototype/request', views.prototype_request, name='prototype_request')
+    # public views 
+    path('', views.HomeView.as_view(), name='home'),
+    path('accounts/', include('allauth.urls')),
+
+    # authenticated user views
+    path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+
 ]
