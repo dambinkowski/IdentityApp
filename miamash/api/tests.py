@@ -155,8 +155,8 @@ class ProfileIdentityVariantsTests(APITestCase):
             'variant': 'Janusz',
         }
         # Define URLs for profile identity variants
-        self.profile_identity_variant_list_create_url = reverse('profile-identity-variant-list-create')
-        self.profile_identity_variant_detail_url = lambda pk: reverse('profile-identity-variant-detail', args=[pk])     
+        self.profile_identity_variant_list_create_url = reverse('api-profile-identity-variant-list-create')
+        self.profile_identity_variant_detail_url = lambda pk: reverse('api-profile-identity-variant-detail', args=[pk])
 
     # user can create their profile identity variants
     def test_user_can_create_their_identity_variants(self):
@@ -320,10 +320,10 @@ class RequestsSendTests(APITestCase):
         }   
 
         # Define URLs for requests
-        self.request_send_list_create_url = reverse('request-send-list-create')
-        self.request_send_detail_url = lambda pk: reverse('request-send-detail', args=[pk]) 
-        self.request_send_request_identity_variant_list_create_url = lambda pk: reverse('request-send-request-identity-variant-list-create', args=[pk])
-        self.request_send_request_identity_variant_detail_url = lambda pk, request_identity_variant_pk: reverse('request-send-request-identity-variant-detail', args=[pk, request_identity_variant_pk])
+        self.request_send_list_create_url = reverse('api-request-send-list-create')
+        self.request_send_detail_url = lambda pk: reverse('api-request-send-detail', args=[pk]) 
+        self.request_send_request_identity_variant_list_create_url = lambda pk: reverse('api-request-send-request-identity-variant-list-create', args=[pk])
+        self.request_send_request_identity_variant_detail_url = lambda pk, request_identity_variant_pk: reverse('api-request-send-request-identity-variant-detail', args=[pk, request_identity_variant_pk])
 
     # user can create new sent requests
     def test_user_can_create_new_sent_requests(self):
@@ -997,12 +997,12 @@ class RequestsReceiveTests(APITestCase):
         )
 
         # Define URLs for requests
-        self.request_receive_list_url = reverse('request-receive-list')
-        self.request_receive_detail_url = lambda pk: reverse('request-receive-detail', args=[pk]) 
-        self.request_receive_request_identity_variant_list_url = lambda pk: reverse('request-receive-request-identity-variant-list', args=[pk])
-        self.request_receive_request_identity_variant_detail_url = lambda pk, request_identity_variant_pk: reverse('request-receive-request-identity-variant-detail', args=[pk, request_identity_variant_pk])
-        self.request_receive_accept_url = lambda pk: reverse('request-receive-accept', args=[pk])
-        self.request_receive_deny_url = lambda pk: reverse('request-receive-deny', args=[pk])       
+        self.request_receive_list_url = reverse('api-request-receive-list')
+        self.request_receive_detail_url = lambda pk: reverse('api-request-receive-detail', args=[pk]) 
+        self.request_receive_request_identity_variant_list_url = lambda pk: reverse('api-request-receive-request-identity-variant-list', args=[pk])
+        self.request_receive_request_identity_variant_detail_url = lambda pk, request_identity_variant_pk: reverse('api-request-receive-request-identity-variant-detail', args=[pk, request_identity_variant_pk])
+        self.request_receive_accept_url = lambda pk: reverse('api-request-receive-accept', args=[pk])
+        self.request_receive_deny_url = lambda pk: reverse('api-request-receive-deny', args=[pk])       
 
     # user can see list of received requests
     def test_user_can_see_list_of_received_requests(self):

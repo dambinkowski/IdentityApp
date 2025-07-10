@@ -4,5 +4,8 @@
 <p>Hello {{ user.username }}!</p>
 <p> Possible actions:</p>
 
-
+<p>Profile Variants</p>
+<p>
+    <a href="{% url 'profile-identity-variant-list-create' %}">Manage Identity Variants</a>
+</p>
 {% endblock %}

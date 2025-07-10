@@ -156,3 +156,13 @@ and take advantage of object oriented programiming i change to class view even f
 
 my next step is to continue making web page endpoints 
 i will stay focused and not do any css until every functionality is done 
+
+i am gonig to make website endiponits identical or very similar to api endponits 
+
+okay so I thought i can just set up reponse to be html renderere, and I will be good to go 
+but I also need to overide get response to change it from json to dict for template to 
+be able to get data 
+
+next issue was i see data data[0].key but apperantly its data.0.key becaues its python dictionaries 
+
+so glad i defined urls as variabless in setup so it was easy to change name for urls adding api in front, so web can use without api 

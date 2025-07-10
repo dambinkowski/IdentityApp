@@ -1,0 +1,25 @@
+{% extends "web/private/base.html" %}
+{% block content %}
+<h2>Variant Details  </h2>
+<p>Manage your identity variants here.</p>
+
+<p>
+    {% if identity_variants %}
+        <ul>
+            {% for variant in identity_variants %}
+                <!-- id, label, context, variant -->
+                <li>
+                    ID: {{ variant.id }}<br>
+                    Label: {{ variant.label }}<br>
+                    Context: {{ variant.context }}<br>
+                    Variant: {{ variant.variant }}<br>
+                    <a href="{% url 'api-profile-identity-variant-detail' variant.id %}">View Details</a>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No identity variants found.</p>
+    {% endif %}
+</p>
+
+
+{% endblock %}
