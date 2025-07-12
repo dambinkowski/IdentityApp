@@ -1,0 +1,28 @@
+{% extends "web/private/base.html" %}
+{% block content %}
+
+<h2>Add Profile Identity Variant</h2>
+<p>Use the form below to add a new identity variant.</p>    
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add Variant</button>
+</form> 
+
+{% if form.errors %}
+    <div class="errors">
+        <p>Please correct the errors below:</p>
+        <ul>
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% endblock %}

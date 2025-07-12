@@ -1,17 +1,16 @@
-from django.shortcuts import render, get_object_or_404
 from core.models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.shortcuts import redirect
-from api.views import *
-from rest_framework import renderers
-from rest_framework.response import Response
+from .forms import ProfileIdentityVariantForm
+from django.urls import reverse_lazy
+from .permissions import ProfileIdentityVariantOwnerMixin
 
 
 # Home view 
 class HomeView(TemplateView):
     """
-    Render welcome page for unauthenticated users
+    View renders HTML home page for unauthenticated users, authenticated users will be redirected to dashboard view 
     """
     template_name = 'web/public/index.html'
 
@@ -24,158 +23,74 @@ class HomeView(TemplateView):
 # Dashboard view
 class DashboardView(LoginRequiredMixin, TemplateView):
     """
-    Dashboard page for authenticated users
+    View renders HTML page for authenticated users, entry point for pathway of actions. 
+    Provides links to manage profile identity variants, send requests, and receive requests.
     """
     template_name = 'web/private/dashboard.html'
 
+# Profile Identity variants views, list, create, detail, update, delete
+class ProfileIdentityVariantListView(ProfileIdentityVariantOwnerMixin, ListView):
+    """
+    View gets all ProfileIdentityVariant objects for the authenticated user from the database
+    then Renders HTML page with the list of those fetched objects.
+    """
+    template_name = 'web/private/profile_identity_variant_list.html'
+    context_object_name = 'profile_identity_variants'
 
 
-# def prototype_request(request):
-#     singleRequest = get_object_or_404(Request, pk=3)
-#     return render(request,'web/prototype_request.html', {'SingleRequest':singleRequest})
+class ProfileIdentityVariantCreateView(ProfileIdentityVariantOwnerMixin, CreateView):
+    """ 
+    View renders HTML page with the form to create a new ProfileIdentityVariant object.
+    When form is submitted, view proccesse, hard codes the user to cerdentials of the logged-in user,
+    and saves the new ProfileIdentityVariant object to the database and redirects to the list view.
+    """
+    form_class = ProfileIdentityVariantForm
+    template_name = 'web/private/profile_identity_variant_create.html'
+    success_url = reverse_lazy('profile-identity-variant-list')
 
-# Profile Views
-class ProfileIdentityVariantListCreateView(ProfileIdentityVariantListCreateAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variants
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/identity_variant.html'
+    def form_valid(self, form):
+        # process user owner server side, by hardcoding the user to the logged-in user
+        # this is to ensure that the user cannot create a variant for another user
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        # get the queryset from the parent view
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({'identity_variants': serializer.data})
-    
-class ProfileIdentityVariantDetailView(ProfileIdentityVariantDetailAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variants
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/identity_variant_detail.html'
 
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response({'identity_variant': serializer.data})
+class ProfileIdentityVariantDetailView(ProfileIdentityVariantOwnerMixin, DetailView):
+    """
+    View gets ProfileIdentityVariant pk from the URL, then queries the database filtering by 
+    user credentials that come from server side using login credentials, then in those avaible resources
+    looks for match from the URL pk. Once found it will render HTML page with details otheriwe it will return 404. 
+    """
+    template_name = 'web/private/profile_identity_variant_detail.html'
+    context_object_name = 'profile_identity_variant'
 
-    
-# Send requests views   
-class RequestSendListCreateView(RequestSendListCreateAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variants
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_send.html'
 
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({'send_requests': serializer.data})
+class ProfileIdentityVariantUpdateView(ProfileIdentityVariantOwnerMixin, UpdateView):
+    """
+    View gets ProfileIdentityVariant pk from the URL, then queries the database filtering by 
+    user credentials that come from server side using login credentials, then in those available resources
+    looks for match from the URL pk. Once found it will render HTML page with the form with data from database loaded in there
+    now user can update the form and submit it, wich will then validate the data, create object and save it to the database. 
+    After succesful update user will be redirected to list view of all ProfileIdentityVariant.
+    """
+    form_class = ProfileIdentityVariantForm
+    template_name = 'web/private/profile_identity_variant_update.html'
+    success_url = reverse_lazy('profile-identity-variant-list')
 
-class RequestSendDetailView(RequestSendDetailAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variants
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_send_detail.html'
 
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response({'send_request': serializer.data})
-    
-class RequestSendRequestIdentityVariantListCreateView(RequestSendRequestIdentityVariantListCreateAPIView):
+class ProfileIdentityVariantDeleteView(ProfileIdentityVariantOwnerMixin, DeleteView):
     """
-    Uses api endpoint to render html template page with Profile Identity Variants
+    View reuses detail tempalet, uses the same safety logic to maintain server side security of using user credentials to filter
+    query set, then it allows post form method for aleready used template in detail view, this way detail page can be used for both
+    detail view and delete view. User can delete ProfileIdentityVariant object by clicking on the delete button in the detail view template
+    So this extentds detail view get functionality and allows post to delete the object.
     """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_send_request_identity_variant.html'
+    context_object_name = 'profile_identity_variant'
+    template_name = 'web/private/profile_identity_variant_detail.html'
+    success_url = reverse_lazy('profile-identity-variant-list')
 
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({'request_identity_variants': serializer.data}) 
-    
-class RequestSendRequestIdentityVariantDetailView(RequestSendRequestIdentityVariantDetailAPIView):   
-    """
-    Uses api endpoint to render html template page with Profile Identity Variants
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_send_request_identity_variant_detail.html'
 
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response({'request_identity_variant': serializer.data})
-    
+# request send 
 
-# Receive requests views
-class RequestReceiveListView(RequestReceiveListAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variants
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_receive.html'
 
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({'receive_requests': serializer.data})
-
-class RequestReceiveDetailView(RequestReceiveDetailAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variant details
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_receive_detail.html'
-
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response({'receive_request': serializer.data})
-    
-class RequestReceiveRequestIdentityVariantListView(RequestReceiveRequestIdentityVariantListAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variant details
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_receive_request_identity_variant.html'
-
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({'request_identity_variants': serializer.data})
-    
-class RequestReceiveRequestIdentityVariantDetailView(RequestReceiveRequestIdentityVariantDetailAPIView):
-    """
-    Uses api endpoint to render html template page with Profile Identity Variant details
-    """
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'web/private/request_receive_request_identity_variant_detail.html'
-
-    # ovver ride get method to return dict 
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response({'request_identity_variant': serializer.data})
-    
-class RequestReceiveAcceptView(RequestReceiveAcceptAPIView):
-    #  I don't think i will have html template for this view
-    # but we will see i propable need functionaliy that once posted redirect or someting 
-
-    pass
-
-class RequestReceiveDenyView(RequestReceiveDenyAPIView):
-    # same here 
-    pass
+# request receive

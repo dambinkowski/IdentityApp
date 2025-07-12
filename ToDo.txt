@@ -166,3 +166,22 @@ be able to get data
 next issue was i see data data[0].key but apperantly its data.0.key becaues its python dictionaries 
 
 so glad i defined urls as variabless in setup so it was easy to change name for urls adding api in front, so web can use without api 
+
+okay this is not saving time, trying to make html form with errors is not easy 
+DRF is not made for this, so switch of plans, I am gonig to use django, and create permissions again, i think i will be faster doing that
+then read bunch of DRF documentaitnos trying to make things work, django templetes were made to handle those html actions 
+so that is a big switch 
+
+lets go 
+\
+i was thking to do permissions.py file again 
+
+normalyl i would just hard code the url, but then i came across reverse lazy in one of django tutorials, 
+so i did reasrceha in documention, and its the way its common practice to use url name 
+so if i ever need to change path, i don't need to change hardcoded values, because its all connected to name 
+
+i am making views one by one, keeping them separated, i am tired to make one fit all for purpose of basic funcionaly 
+now django is really helpfuul, i am maknig view, and then I get visible errror that i didn't set get queryset or 
+that after edditg using generic update view, I need sucselful url where app should go 
+so developing with django is great 
+
