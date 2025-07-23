@@ -1,0 +1,21 @@
+{% extends "web/private/base.html" %}
+{% block content %}
+<h2> Send requests  list </h2>
+<p>Create New Request</p>
+<a href="{% url 'request-send-create' %}">Create New Request</a>
+<p> list of send requests  </p>
+
+<ul>
+    {% for request in send_requests %}
+        <li>
+            <p>Request Receiver: {{ request.receiver }}</p>
+            <p>Request Reasoning: {{ request.request_reasoning }}</p>
+            <p>Created at: {{ request.created_at }}</p>
+            <p>Status: {{ request.status }}</p>
+            <p><a href="{% url 'request-send-detail' request.id %}">View Details</a></p>
+        </li>
+    {% empty %}
+        <li>No requests sent yet.</li>
+    {% endfor %}
+
+{% endblock %}

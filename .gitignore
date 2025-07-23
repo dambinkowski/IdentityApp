@@ -22,3 +22,8 @@ miamash/api/__pycache__/views.cpython-313.pyc
 miamash/api/__pycache__/permissions.cpython-313.pyc
 miamash/api/__pycache__/tests.cpython-313.pyc
 miamash/api/__pycache__/views.cpython-313.pyc
+miamash/db.sqlite3
+miamash/web/__pycache__/forms.cpython-313.pyc
+miamash/web/__pycache__/permissions.cpython-313.pyc
+miamash/web/__pycache__/urls.cpython-313.pyc
+miamash/web/__pycache__/views.cpython-313.pyc

@@ -1,0 +1,20 @@
+{% extends "web/private/base.html" %}
+{% block content %}
+<h2> Receive  requests  list </h2>
+
+<p> list of receive requests  </p>
+
+<ul>
+    {% for request in received_requests %}
+        <li>
+            <p>Request Sender: {{ request.sender }}</p>
+            <p>Request Reasoning: {{ request.request_reasoning }}</p>
+            <p>Created at: {{ request.created_at }}</p>
+            <p>Status: {{ request.status }}</p>
+            <p><a href="{% url 'request-receive-detail' request.id %}">View Details</a></p>
+        </li>
+    {% empty %}
+        <li>No requests received yet.</li>
+    {% endfor %}
+
+{% endblock %}

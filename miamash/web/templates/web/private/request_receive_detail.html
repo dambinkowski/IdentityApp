@@ -1,8 +1,49 @@
 {% extends "web/private/base.html" %}
 {% block content %}
-<h2> Send requests  detail </h2>
+<h2> Send received   detail </h2>
 
+<p> Request details: </p>
+<li>
+    <p>Request Sender: {{ receive_request.sender }}</p>
+    <p>Request Reasoning: {{ receive_request.request_reasoning }}</p>
+    <p>Created at: {{ receive_request.created_at }}</p>
+    <p>Status: {{ receive_request.status }}</p>
+</li>
 
+<p>Accept </p>
+<span>
+    <form method="POST" action="{% url 'request-receive-accept' receive_request.id %}">
+        {% csrf_token %}
+        <button type="submit"
+                onclick="return confirm('Are you sure you want to accept this request?');">
+            Accept Request
+        </button>
+    </form>
+</span>
 
+<p>Deny</p>
+<span>
+    <form method="POST" action="{% url 'request-receive-deny' receive_request.id %}">
+        {% csrf_token %}
+        <button type="submit"
+                onclick="return confirm('Are you sure you want to deny this request?');">
+            Deny Request
+        </button>
+    </form>
+</span>
+
+<p> Request Identity variant </p>
+<ul>
+    {% for variant in request_identity_variants %}
+        <li>
+            <p>Variant</p>
+            <p>Label: {{ variant.label }}</p>
+            <p>Context: {{ variant.context }}</p>
+            <p>shared data: {{variant.profile_link}}</p>
+            <p>Detail <a href="{% url 'request-receive-request-identity-variant-detail' variant.request.id variant.id %}">View</a></p>
+        </li>
+    {% endfor %}
+</ul>
 
 {% endblock %}
+

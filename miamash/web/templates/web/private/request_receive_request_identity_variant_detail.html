@@ -1,8 +1,16 @@
 {% extends "web/private/base.html" %}
 {% block content %}
-<h2> Send requests  detail </h2>
+<h2> Received request  identity variant detail    </h2>
 
 
+
+<p>Label: {{ request_identity_variant.label }}</p>
+<p>Context: {{ request_identity_variant.context }}</p>
+<p>Users provided info: {{ request_identity_variant.profile_link }}</p>
+
+<p> Add/Edit link 
+    <a href="{% url 'request-receive-request-identity-variant-update' request_identity_variant.request.id request_identity_variant.id %}">Add/Edit</a>.
+</p>
 
 
 {% endblock %}

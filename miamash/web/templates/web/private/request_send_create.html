@@ -1,16 +1,17 @@
-{% extends 'web/private/base.html' %}
-
+{% extends "web/private/base.html" %}
 {% block content %}
-<h2>Update Profile Identity Variant</h2>
+<h2>Create Send Request</h2>
+
+<p>Create new request .</p>    
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Update Variant</button>
-</form>
+    <button type="submit">Add Variant</button>
+</form> 
 
 {% if form.errors %}
     <div class="errors">
-        <p>Certain fields need corrections:</p>
+        <p>Please correct the errors below:</p>
         <ul>
             {% for field in form %}
                 {% for error in field.errors %}
@@ -23,4 +24,6 @@
         </ul>
     </div>
 {% endif %}
+
 {% endblock %}
+

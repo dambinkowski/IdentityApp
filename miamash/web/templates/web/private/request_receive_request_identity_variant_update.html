@@ -1,11 +1,11 @@
 {% extends 'web/private/base.html' %}
 
 {% block content %}
-<h2>Update Profile Identity Variant</h2>
+<h2>Add / Edit link </h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Update Variant</button>
+    <button type="submit">Update Request Identity Variant</button>
 </form>
 
 {% if form.errors %}

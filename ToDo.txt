@@ -185,3 +185,44 @@ now django is really helpfuul, i am maknig view, and then I get visible errror t
 that after edditg using generic update view, I need sucselful url where app should go 
 so developing with django is great 
 
+as i keep reading different part of documention i keep finding things,
+ i realize i don't need to do forms.py because i can just oxpose fields in create view 
+ https://docs.djangoproject.com/en/5.2/ref/class-based-views/generic-editing/#django.views.generic.edit.CreateView
+because create view inharitace is from form mixin 
+
+i actually decided to stick to extenting form file, because  then to DRY i would have to put in permissions, 
+and that is not good separation of concerns, so even tho I could just set up field, I prefer 
+to have forms in forms file, permissions in permissions file, and logic in logic file - that uses permissions, and forms when nessesesry 
+
+receiver is a dropdown field by default, for safety i am going to overide that, and declare it as charfield, 
+
+i rememeber having hard time with funcnion based views, that I wanted to have multiple query results for different objects in 
+one view, so I came across funciton get or 404, that would use to get objcets, and combine them dictionary and pass them to template 
+well funcion based view i came across simpler solution that overites context_data where context data is data being passed to template 
+now in that place add other keys and values to context 
+
+so I am overiding the request, and then funcion is modular, but I know the objcet Request has request_identity_variants that I can call all for 
+that instance, but at pylance dos'nt know that, so it's red and I don't like it so searching how to solve this, i just used # type: ignore 
+
+IDOR vurnebility, so I am making this separation of coners different views for different actions even tho they use the same template, 
+this way i can use one view for get and other view for post, but now when I make post view - i need to secure it
+becasue mixin will protect from get, but when its come to post, django comes battery included - but single connecnion and so many 
+overrides right away, there is another package guardian - but I am at the point i don't want to read documentatino of other things and customize it
+to work, so I am just gonna make another permission class, and overide stuff to make sure objects are allowed for that user before action... 
+
+so i came across that update view takes Request.user.id and i need Request.user.username, which is funny becasue form is populated with int
+but data gets cleaned so its looking at it as username, so its loads id but expects username, first i was gonna change it in form part
+but then i realzide i would need form robust if its initial or update, then i was why would i do that logic here if there are literlly 
+two separate views, since django is so robust, i have decided to just override initial data in update view and return overiden value back 
+i forgot i made design decision, that receiver can not be changed, because that seems more common expected behavionr 
+
+django is great, i can just access parent by using request_identity_variant.request.PARENTFIELDS so this nice, but because of that i need to 
+do more tests for security, so i added Request level check as well 
+
+request_identity_variant built in view of course was looking by default at pk but pk is request, and I need detail for request_identity_variant, 
+those errors are hard to detect because its not code i wrote, it's the code that comes with django and only error i was getting is 404 not found
+so I knew someting with the mixin isn't right, but then parametrs in URL were correctly passed, so I realzied i need to overide for 
+the detail view which of passed parametr reflect to request_identity_variant 
+
+i keep want to add repetitive code to mixin, but its permission mixin so I am trying to make logic separate, but then two lines of code are 
+fine to not create another mixin 

@@ -2,10 +2,22 @@
 {% block content %}
 <h2>Dashboard</h2>
 <p>Hello {{ user.username }}!</p>
+<br>
 <p> Possible actions:</p>
-
+<br>
 <p>Profile Variants</p>
 <p>
     <a href="{% url 'profile-identity-variant-list' %}">Manage Identity Variants</a>
 </p>
+<br>
+<p>Send Requests</p>
+<p>
+    <a href="{% url 'request-send-list' %}">Send Requests</a>
+</p>
+<br>
+<p> Receive Requests</p>
+<p>
+    <a href="{% url 'request-receive-list' %}">Receive Requests</a>
+</p>
+<br>
 {% endblock %}
