@@ -247,7 +247,7 @@ class RequestReceiveRequestIdentityVariantDetailView(RequestReceiverRequestIdent
     template_name = 'web/private/request_receive_request_identity_variant_detail.html'
     context_object_name = 'request_identity_variant'
 
-class RequestReceiveRequestIdentityVariantUpdateView(RequestReceiverRequestIdentityVariantPermissionMixin, UpdateView):
+class RequestReceiveRequestIdentityVariantUpdateView(RequestReceiverRequestIdentityVariantPermissionMixin, IsRequestAcceptedPermissionMixin, UpdateView):
     """
     View gets id - pk from URL, then checks if there is Request with that id available for that user based on login credentials using mixin, 
     then it gets RequestIdentityVariant object from the database, and renders HTML page with form prepopulated with data from that object. 
@@ -265,9 +265,10 @@ class RequestReceiveAcceptView(RequestReceiverPermissionMixin, View):
     After that it redirects to the RequestReceiveDetailView.
     """
     def post(self, request, *args, **kwargs):
-        self.request_receive.status = 'accepted'  # type: ignore
-        self.request_receive.save()  # type: ignore
-        return redirect('request-receive-detail', pk=self.request_receive.pk)  # type: ignore
+        request_receive_object = self.get_secured_request()  
+        request_receive_object.status = 'accepted'  # type: ignore
+        request_receive_object.save()  # type: ignore
+        return redirect('request-receive-detail', pk=request_receive_object.pk)
 
 
 class RequestReceiveDenyView(RequestReceiverPermissionMixin, View):
@@ -276,6 +277,9 @@ class RequestReceiveDenyView(RequestReceiverPermissionMixin, View):
     After that it redirects to the RequestReceiveDetailView.
     """
     def post(self, request, *args, **kwargs):
-        self.request_receive.status = 'denied'  # type: ignore
-        self.request_receive.save()  # type: ignore
-        return redirect('request-receive-detail', pk=self.request_receive.pk)  # type: ignore
+        request_receive_object = self.get_secured_request()  
+        # wipe the links 
+        RequestIdentityVariant.objects.filter(request=request_receive_object).update(profile_link=None)
+        request_receive_object.status = 'denied'  # type: ignore
+        request_receive_object.save()  # type: ignore
+        return redirect('request-receive-detail', pk=request_receive_object.pk)  # type: ignore

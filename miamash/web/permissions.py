@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import View
 from core.models import *
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied
 
 # only profile owner mixin 
 class ProfileIdentityVariantOwnerPermissionMixin(LoginRequiredMixin, View):
@@ -76,3 +77,20 @@ class RequestReceiverRequestIdentityVariantPermissionMixin(LoginRequiredMixin, V
     def dispatch(self, request, *args, **kwargs):
         self.request_receive = get_object_or_404(Request, pk=kwargs['pk'], receiver=request.user)  # only expose when there is match of PK from URL and the receiver is request.user 
         return super().dispatch(request, *args, **kwargs)
+    
+class IsRequestAcceptedPermissionMixin(View):
+    """
+    Permission checks if the request status is accepted.
+    """
+    # to make it roboust check if object is Request or RequestIdentityVariant
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset) # type: ignore 
+        if isinstance(obj, Request):
+            if obj.status != 'accepted':
+                raise PermissionDenied("Request is not accepted.")
+        elif isinstance(obj, RequestIdentityVariant):
+            if obj.request.status != 'accepted':
+                raise PermissionDenied("Request is not accepted.")
+        else:
+            raise PermissionDenied("Only Request or RequestIdentityVariant objects are allowed.")
+        return obj

@@ -226,3 +226,25 @@ the detail view which of passed parametr reflect to request_identity_variant
 
 i keep want to add repetitive code to mixin, but its permission mixin so I am trying to make logic separate, but then two lines of code are 
 fine to not create another mixin 
+
+okay next i need to set up that only accepted requests users can add links, like in api same for web view 
+so server side returns 404 if user tries to access 
+
+got back to coding i forgot has_object_permission is rest class, and django generic view is not calling it so that method is nerev called, 
+i will just use dispatch 
+
+
+its what is a good moment to check permisison, so I use methods that views call its not fully independent check, generic update view 
+call dispatch and then get object, oveririding get_object seems like the most apropariate moment 
+because of that i need to do a lot of type ignore, maybe i should have make it more independednt make a class method, custom 
+and then call it from view and in the view overide get and call that method hmm 
+
+
+
+
+as wrting draf report i realize request send i set sender twice fix it later 
+as i writing draft request send identity variant detail does not use lookup so where is test for that 
+add references for how i fourd drf spectacular and other sigrificant links from here 
+
+
+

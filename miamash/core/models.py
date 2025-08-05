@@ -26,7 +26,6 @@ class Request(models.Model):
         DENIED = 'denied', 'Denied'
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
 
-
     def __str__(self):
         return f"[{self.pk}] FROM:{self.sender.username} / TO:{self.receiver.username} / {self.request_reasoning}"
 
@@ -35,5 +34,9 @@ class RequestIdentityVariant(models.Model):
     label = models.CharField(max_length=50)
     context = models.TextField(blank=True)
     profile_link = models.ForeignKey(ProfileIdentityVariant,null=True, blank=True, on_delete=models.SET_NULL) 
+
     def __str__(self):
         return f"{self.label} / {self.context} / {self.profile_link}"
+    
+
+
