@@ -80,6 +80,7 @@ class RequestSendRequestIdentityVariantDetailAPIView(generics.RetrieveUpdateDest
     """
     serializer_class = RequestSendRequestIdentityVariantSerializer
     permission_classes = [IsRequestSender]
+    lookup_url_kwarg = 'request_identity_variant_pk'
 
     def get_queryset(self):
         request_id = self.kwargs['pk']

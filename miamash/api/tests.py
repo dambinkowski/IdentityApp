@@ -707,6 +707,7 @@ class RequestsSendTests(APITestCase):
         self.assertEqual(response.json()['label'], self.valid_request_identity_variant_data['label'])
         self.assertIn('context', response.json())
         self.assertEqual(response.json()['context'], self.valid_request_identity_variant_data['context'])
+        print("Response line 710", response.json()['label'])
 
     # user can not see other users request identity variants detail
     def test_user_cannot_see_other_users_request_identity_variants_detail(self):

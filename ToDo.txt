@@ -246,5 +246,13 @@ as wrting draf report i realize request send i set sender twice fix it later
 as i writing draft request send identity variant detail does not use lookup so where is test for that 
 add references for how i fourd drf spectacular and other sigrificant links from here 
 
+okay so i didn't miss tesst does check, but i am passing variables to view, instead of in urls so it knows which values I am asking for 
+nope that was not the case, i still make url using lambda 
+
+
+
+hello oppa
+i hope this coding bit isnt giving you too hard of a time rn 
+love you 
 
 
