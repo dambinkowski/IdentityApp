@@ -53,3 +53,7 @@ pip install djangorestframework-simplejwt
 
 # documentation 
 pip install drf-spectacular
+
+# bootstrap
+pip install django-bootstrap5
+
