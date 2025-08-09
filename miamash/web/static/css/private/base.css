@@ -1,0 +1,65 @@
+/* Fonts */
+@font-face {
+    font-family: 'MozillaHeadline';
+    src: url(../../fonts/MozillaHeadline-VariableFont_wdth\,wght.ttf) format('truetype'),
+
+}
+
+/* Page Layout  */
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'MozillaHeadline', Arial, sans-serif;
+    color: #333;
+    background-color: #966f6f;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /* background-color: #966f6f3b; */
+}
+
+.layout_fixed {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header  */
+.header-container {
+    background-color: #238fee;
+
+
+}
+
+
+.btn {
+    background-color: #437bb0;
+    color: white;
+}
+
+.btn:hover {
+    background-color: #114366;
+}
+
+/* Main content  */
+.main-container {
+    background-color: #a8cbee;
+    min-height: 0;
+
+}
+.stretch-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Footer  */
+
+.footer-container {
+    color: white;
+}

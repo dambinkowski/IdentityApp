@@ -258,3 +258,7 @@ just discovered
 django.contrib.messages 
 while going over documentation of bootstrap for jdango 
 https://django-bootstrap5.readthedocs.io/en/latest/quickstart.html#example-template
+
+okay lets start styling
+https://getbootstrap.com/docs/5.3/getting-started/introduction/
+
