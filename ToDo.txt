@@ -262,3 +262,9 @@ https://django-bootstrap5.readthedocs.io/en/latest/quickstart.html#example-templ
 okay lets start styling
 https://getbootstrap.com/docs/5.3/getting-started/introduction/
 
+doing main content cards 
+https://getbootstrap.com/docs/5.3/components/card/
+
+moving from list items to div cards using bootstrap 
+i don't like how disaligned label, context, variant are so I am going to use same approach that i figured out for main 
+wesbite grid using d-flex single column streach 

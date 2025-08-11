@@ -7,23 +7,46 @@
     <a href="{% url 'profile-identity-variant-create' %}">Add New Identity Variant</a>
 </p>
 
-<p>
+
     {% if profile_identity_variants %}
-        <ul>
+        <!-- Grid  -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             {% for variant in profile_identity_variants %}
-                <!-- id, label, context, variant -->
-                <li>
-                    ID: {{ variant.id }}<br>
-                    Label: {{ variant.label }}<br>
-                    Context: {{ variant.context }}<br>
-                    Variant: {{ variant.variant }}<br>
-                    Detail: <a href="{% url 'profile-identity-variant-detail' variant.id %}">View Details</a><br>
-                </li>
+                <div class="col">
+                    <!-- Card details  -->
+                    <div class="card h-100 mb-3 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <!-- Label -->
+                            <p class="text-muted mb-0 small">Label:</p>
+                            <h5 class="card-text ps-4 ">{{ variant.label }}</h5>
+
+                            <!-- Context -->
+                            <p class="text-muted mb-0 mt-3 small">Context:</p>
+                            <p class="card-text">{{ variant.context }}</p>
+
+                            <!-- Spacer to push variant to bottom to even out across the cards -->
+                            <div class="flex-grow-1"></div>
+
+                            <!-- Variant -->
+                            <p class="text-muted mb-0 small">Variant:</p>
+                            <h5 class="card-text text-center">{{ variant.variant }}</h5>
+                        </div>
+                        <div class="card-footer text-end">
+                            <a class="btn text-white" href="{% url 'profile-identity-variant-detail' variant.id %}">View Details</a>
+                        </div>
+                    </div>
+                </div>
             {% endfor %}
-        </ul>
+        </div>
+                
+
+
+
+            
+        
     {% else %}
         <p>No identity variants found.</p>
     {% endif %}
-</p>
+
 
 {% endblock %}
