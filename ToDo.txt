@@ -268,3 +268,9 @@ https://getbootstrap.com/docs/5.3/components/card/
 moving from list items to div cards using bootstrap 
 i don't like how disaligned label, context, variant are so I am going to use same approach that i figured out for main 
 wesbite grid using d-flex single column streach 
+
+okay next i have request received
+i reused the gird and layout from profile identity variant, 
+changed variant to created at and other fiedls to correspond to request recievd data 
+but I also have status I kind of want to make it float in right top corner 
+
