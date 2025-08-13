@@ -3,33 +3,73 @@
 
 
 <!-- Main content header -->
-    <div class="row align-items-center mb-2">
-        <div class="col">
-            <h2>Dashboard</h2>
-            <p>Hello {{ user.username }}!</p>
+<div class="row align-items-center mb-2">
+    <div class="col">
+        <h2>Dashboard</h2>
+        <p>Hello {{ user.username }}!</p>
+    </div>
+    <hr>
+</div>
+
+<!-- Main content body -->
+<div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5  g-4">
+    <!-- Manage Identity Variants -->
+    <div class="col">
+        <div class="card h-100 mb-3 shadow-lg">
+            <div class="card-body d-flex flex-column">
+                <!-- Action -->
+                <p class="text-muted mb-0 small">Action:</p>
+                <h5 class="card-text text-center ">Manage Identity Variants</h5>
+
+                <!-- Info -->
+                <p class="text-muted mb-0 mt-3 small">Info:</p>
+                <p class="card-text">Create your private personal identity variants - then you can share it with someone that requests it!</p>
+            </div>
+            <!-- Link to action -->
+            <div class="card-footer text-center">
+                <a class="btn text-white m-3" href="{% url 'profile-identity-variant-list' %}">Manage Identity Variants</a>
+            </div>
         </div>
-        <hr>
     </div>
 
+    <!-- Sent requests -->
+    <div class="col">
+        <div class="card h-100 mb-3 shadow-lg">
+            <div class="card-body d-flex flex-column">
+                <!-- Action -->
+                <p class="text-muted mb-0 small">Action:</p>
+                <h5 class="card-text text-center">Send Requests</h5>
 
-<h2>Dashboard</h2>
-<p>Hello {{ user.username }}!</p>
-<br>
-<p> Possible actions:</p>
-<br>
-<p>Profile Variants</p>
-<p>
-    <a href="{% url 'profile-identity-variant-list' %}">Manage Identity Variants</a>
-</p>
-<br>
-<p>Send Requests</p>
-<p>
-    <a href="{% url 'request-send-list' %}">Send Requests</a>
-</p>
-<br>
-<p> Receive Requests</p>
-<p>
-    <a href="{% url 'request-receive-list' %}">Receive Requests</a>
-</p>
-<br>
+                <!-- Info -->
+                <p class="text-muted mb-0 mt-3 small">Info:</p>
+                <p class="card-text">Send new request, and manage already sent requests as well!</p>
+            </div>
+            <!-- Link to action -->
+            <div class="card-footer text-center">
+                <a class="btn text-white m-3" href="{% url 'request-send-list' %}">Send Requests</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Received requests -->
+    <div class="col">
+        <div class="card h-100 mb-3 shadow-lg">
+            <div class="card-body d-flex flex-column">
+                <!-- Action -->
+                <p class="text-muted mb-0 small">Action:</p>
+                <h5 class="card-text text-center">Received requests</h5>
+
+                <!-- Info -->
+                <p class="text-muted mb-0 mt-3 small">Info:</p>
+                <p class="card-text">Manage requests that you have received! </p>
+            </div>
+            <!-- Link to action -->
+            <div class="card-footer text-center">
+                <a class="btn text-white m-3" href="{% url 'request-receive-list' %}">Received Requests</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}
