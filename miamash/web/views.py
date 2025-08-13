@@ -109,12 +109,15 @@ class RequestSendCreateView(RequestSenderPermissionMixin, CreateView):
     """
     form_class = RequestSendForm
     template_name = 'web/private/request_send_create.html'
-    success_url = reverse_lazy('request-send-list')
 
     def form_valid(self, form):
         # process user owner server side, by hardcoding the sender to the logged-in user
         form.instance.sender = self.request.user
-        return super().form_valid(form)
+        return super().form_valid(form) 
+        
+    def get_success_url(self):
+        # self.object will be the request 
+        return reverse_lazy('request-send-detail', kwargs={'pk': self.object.pk})  #type:ignore
     
     # i will want it to redirect to create request variant after 
 

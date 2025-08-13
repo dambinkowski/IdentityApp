@@ -1,29 +1,32 @@
 {% extends "web/private/base.html" %}
 {% block content %}
-<h2>Create Send Request</h2>
+{% load django_bootstrap5 %} 
 
-<p>Create new request .</p>    
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Add Variant</button>
-</form> 
-
-{% if form.errors %}
-    <div class="errors">
-        <p>Please correct the errors below:</p>
-        <ul>
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <li>{{ field.label }}: {{ error }}</li>
-                {% endfor %}
-            {% endfor %}
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
+<!-- Main content header -->
+<div class="row align-items-center mb-2">
+    <div class="col">
+        <h2>Send new request</h2>
+        <p>Use the form below to send a new request and get user informaitons!</p>
     </div>
-{% endif %}
+    <hr>
+</div>
 
+<!-- Form  -->
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="card shadow-lg m">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% bootstrap_form_errors form type='all' %}
+                    {% bootstrap_form form layout='vertical' form_group_class='mb-3' %}
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Create New Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 

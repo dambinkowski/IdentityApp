@@ -279,3 +279,14 @@ next send should be pretty similar to receaive
 i just catched myself again instead of keeep going I am like bootstrap form is a little white should i customize it more 
 and I could really go into rabit hole to make this form look cooler 
 
+also i was getting error that bootstrap is not loaded, uperantly it doesn't carry over from base ? but css does ? i need to research more 
+what is happening there, but I justa loaded it again at the top of the form and it worked, i assume it loads but if I am using reference like bootstrap 
+form
+
+creating new request should go to request details right away, i really should start writing unit testing, i need to go back to view logic 
+and fix that, 
+
+i was 
+
+
+
