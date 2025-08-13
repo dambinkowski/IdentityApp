@@ -276,3 +276,6 @@ but I also have status I kind of want to make it float in right top corner
 
 next send should be pretty similar to receaive 
 
+i just catched myself again instead of keeep going I am like bootstrap form is a little white should i customize it more 
+and I could really go into rabit hole to make this form look cooler 
+
