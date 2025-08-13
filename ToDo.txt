@@ -274,3 +274,4 @@ i reused the gird and layout from profile identity variant,
 changed variant to created at and other fiedls to correspond to request recievd data 
 but I also have status I kind of want to make it float in right top corner 
 
+next send should be pretty similar to receaive 
