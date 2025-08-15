@@ -286,7 +286,7 @@ form
 creating new request should go to request details right away, i really should start writing unit testing, i need to go back to view logic 
 and fix that, 
 
-i was 
+next is detail views 
 
 
 

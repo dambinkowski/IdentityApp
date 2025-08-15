@@ -9,7 +9,7 @@
 body {
     font-family: 'MozillaHeadline', Arial, sans-serif;
     color: #333;
-    background-color: #966f6f;
+    background-color: rgb(46, 71, 96);
     height: 100vh;
     /* make it to take all height to keep header and footer in a place  */
     display: flex;
@@ -22,13 +22,14 @@ header {
     background-color: #238fee;
 }
 
-.btn {
+.btn-blue {
     background-color: #437bb0;
     color: white;
 }
 
-.btn:hover {
+.btn-blue:hover {
     background-color: #114366;
+    color: white;
 }
 
 /* Main content  */
@@ -46,3 +47,4 @@ main {
 .footer-container {
     color: white;
 }
+
