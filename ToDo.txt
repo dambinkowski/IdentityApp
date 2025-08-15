@@ -286,7 +286,8 @@ form
 creating new request should go to request details right away, i really should start writing unit testing, i need to go back to view logic 
 and fix that, 
 
-next is detail views 
+next is detail views, i wanted to use waring buttnos styling but i overirdden colors to look good for styling, so had to go back and refactor 
+
 
 
 
