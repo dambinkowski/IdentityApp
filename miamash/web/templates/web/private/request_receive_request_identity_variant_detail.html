@@ -1,16 +1,45 @@
 {% extends "web/private/base.html" %}
 {% block content %}
-<h2> Received request  identity variant detail    </h2>
 
 
+<!-- Main content header -->
+<div class="row align-items-center mb-2">
+    <div class="col">
+        <h2>Identity Variant Detail</h2>
+        <p>Below is detail of identity variant that has been requested.</p>
+    </div>
+    <hr>
+</div>
 
-<p>Label: {{ request_identity_variant.label }}</p>
-<p>Context: {{ request_identity_variant.context }}</p>
-<p>Users provided info: {{ request_identity_variant.profile_link }}</p>
+<!-- Form  -->
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="card shadow-lg m">
+            <div class="card-body">
+                <!-- Label -->
+                <p class="text-muted mb-0 small">Label:</p>
+                <h5 class="card-text ps-4">{{ request_identity_variant.label }}</h5>
 
-<p> Add/Edit link 
-    <a href="{% url 'request-receive-request-identity-variant-update' request_identity_variant.request.id request_identity_variant.id %}">Add/Edit</a>.
-</p>
+                <!-- Context -->
+                <p class="text-muted mb-0 mt-3 small">Context:</p>
+                <p class="card-text ps-4">{{ request_identity_variant.context }}</p>
 
+                <!-- Variant (only show if exists)-->
+                <p class="text-muted mb-0 small">Your shared information:</p>
+                {% if request_identity_variant.profile_link %}
+                <h5 class="card-text text-center"> {{ request_identity_variant.profile_link }}</h5>
+                {% else %}
+                <p class="card-text text-center">---</p>
+                {% endif %}
+            </div>
+            <!-- Action links -->
+            <div class="card-footer text-end">
+                <a class="btn btn-warning"
+                    href="{% url 'request-receive-request-identity-variant-update' request_identity_variant.request.id request_identity_variant.id %}">Manage Shared Informationc</a>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
