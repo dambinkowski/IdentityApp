@@ -1,35 +1,44 @@
 <!-- THE CODE BELOW IS COPIED FROM venv/lib/allauth/templates/account/logout.html -->
 <!-- I am overiding given template to customized and style it   -->
 
-{% extends "account/account_manage.html"   %}
+{% extends "account/account_manage.html" %}
 
 {% load allauth i18n %}
 {% block head_title %}
-    {% trans "Sign Out" %}
+{% trans "Sign Out" %}
 {% endblock head_title %}
 
 {% block undermenu %}
+<div class="row align-items-center mb-2">
+    <div class="col">
+        <h2>Sign out</h2>
+        <p>Thank you for visiting.</p>
+    </div>
+</div>
 
 
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="card shadow-lg m">
+            <div class="card-body">
+                {% url 'account_logout' as action_url %}
+                {% element form method="post" action=action_url no_visible_fields=True %}
+                {% slot body %}
+                {% csrf_token %}
+                {{ redirect_field }}
+                {% endslot %}
+                {% slot actions %}
+                <p class="card-text text-center">Are you sure you would like to sign out?</p>
+                <div class="text-center">
+                    <button class="btn btn-primary" type="submit">Sign Out</button>
+                </div>
+                {% endslot %}
+                {% endelement %}
+            </div>
+        </div>
+    </div>
+</div>
 
-    {% element h1 %}
-        {% trans "Sign Out" %}
-    {% endelement %}
-    {% element p %}
-        {% trans 'Are you sure you want to sign out?' %}
-    {% endelement %}
-    {% url 'account_logout' as action_url %}
-    {% element form method="post" action=action_url no_visible_fields=True %}
-        {% slot body %}
-            {% csrf_token %}
-            {{ redirect_field }}
-        {% endslot %}
-        {% slot actions %}
-            {% element button type="submit" %}
-                {% trans 'Sign Out' %}
-            {% endelement %}
-        {% endslot %}
-    {% endelement %}
 
 
 {% endblock undermenu %}

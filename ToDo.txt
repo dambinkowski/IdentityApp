@@ -298,4 +298,4 @@ next is detail views, i wanted to use waring buttnos styling but i overirdden co
 
 when doing sign in I was reading that the best pracitec is to copy given code from template in allauth and customize it, style it 
 
-
+as i am going with all auth copying templates i run into {% trans %} did research how it helps building multilangual pages 
