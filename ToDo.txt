@@ -289,5 +289,13 @@ and fix that,
 next is detail views, i wanted to use waring buttnos styling but i overirdden colors to look good for styling, so had to go back and refactor 
 
 
+- welcome page 
+- lolgin page 
+- third party login 
+-log out page 
+- unit tests for web 
+- deployment 
+
+when doing sign in I was reading that the best pracitec is to copy given code from template in allauth and customize it, style it 
 
 

@@ -14,7 +14,7 @@ class HomeView(TemplateView):
     """
     View renders HTML home page for unauthenticated users, authenticated users will be redirected to dashboard view 
     """
-    template_name = 'web/public/index.html'
+    template_name = 'public/index.html'
 
     # over ride get that if user is authenticated, they should be redirect to dashboard
     def get(self, request, *args, **kwargs):
@@ -22,13 +22,20 @@ class HomeView(TemplateView):
             return redirect('dashboard')
         return super().get(request, *args, **kwargs)
 
+# Account settings 
+class AccountView(LoginRequiredMixin,TemplateView):
+    """
+    View where links for various actions, signout changepassword etc.
+    """
+    template_name = 'account/account.html'
+
 # Dashboard view
 class DashboardView(LoginRequiredMixin, TemplateView):
     """
     View renders HTML page for authenticated users, entry point for pathway of actions. 
     Provides links to manage profile identity variants, send requests, and receive requests.
     """
-    template_name = 'web/private/dashboard.html'
+    template_name = 'private/dashboard.html'
 
 # Profile Identity variants views, list, create, detail, update, delete
 class ProfileIdentityVariantListView(ProfileIdentityVariantOwnerPermissionMixin, ListView):
@@ -36,7 +43,7 @@ class ProfileIdentityVariantListView(ProfileIdentityVariantOwnerPermissionMixin,
     View gets all ProfileIdentityVariant objects for the authenticated user from the database
     then Renders HTML page with the list of those fetched objects.
     """
-    template_name = 'web/private/profile_identity_variant_list.html'
+    template_name = 'private/profile_identity_variant_list.html'
     context_object_name = 'profile_identity_variants'
 
 
@@ -47,7 +54,7 @@ class ProfileIdentityVariantCreateView(ProfileIdentityVariantOwnerPermissionMixi
     and saves the new ProfileIdentityVariant object to the database and redirects to the list view.
     """
     form_class = ProfileIdentityVariantForm
-    template_name = 'web/private/profile_identity_variant_create.html'
+    template_name = 'private/profile_identity_variant_create.html'
     success_url = reverse_lazy('profile-identity-variant-list')
 
     def form_valid(self, form):
@@ -63,7 +70,7 @@ class ProfileIdentityVariantDetailView(ProfileIdentityVariantOwnerPermissionMixi
     user credentials that come from server side using login credentials, then in those avaible resources
     looks for match from the URL pk. Once found it will render HTML page with details otheriwe it will return 404. 
     """
-    template_name = 'web/private/profile_identity_variant_detail.html'
+    template_name = 'private/profile_identity_variant_detail.html'
     context_object_name = 'profile_identity_variant'
 
 
@@ -76,7 +83,7 @@ class ProfileIdentityVariantUpdateView(ProfileIdentityVariantOwnerPermissionMixi
     After succesful update user will be redirected to list view of all ProfileIdentityVariant.
     """
     form_class = ProfileIdentityVariantForm
-    template_name = 'web/private/profile_identity_variant_update.html'
+    template_name = 'private/profile_identity_variant_update.html'
     success_url = reverse_lazy('profile-identity-variant-list')
 
 
@@ -88,7 +95,7 @@ class ProfileIdentityVariantDeleteView(ProfileIdentityVariantOwnerPermissionMixi
     So this extentds detail view get functionality and allows post to delete the object.
     """
     context_object_name = 'profile_identity_variant'
-    template_name = 'web/private/profile_identity_variant_detail.html'
+    template_name = 'private/profile_identity_variant_detail.html'
     success_url = reverse_lazy('profile-identity-variant-list')
 
 
@@ -98,7 +105,7 @@ class RequestSendListView(RequestSenderPermissionMixin, ListView):
     View fetches Request objects from database where sever side user logged in credential
     match the sender field of the Request object. Then renders HTML page with that list. 
     """
-    template_name = 'web/private/request_send_list.html'
+    template_name = 'private/request_send_list.html'
     context_object_name = 'send_requests'
 
 class RequestSendCreateView(RequestSenderPermissionMixin, CreateView):
@@ -108,7 +115,7 @@ class RequestSendCreateView(RequestSenderPermissionMixin, CreateView):
     from logged in session. 
     """
     form_class = RequestSendForm
-    template_name = 'web/private/request_send_create.html'
+    template_name = 'private/request_send_create.html'
 
     def form_valid(self, form):
         # process user owner server side, by hardcoding the sender to the logged-in user
@@ -128,7 +135,7 @@ class RequestSendDetailView(RequestSenderPermissionMixin, DetailView):
     It also shows RequestIdentityVariant lits for that request, and allows user to create new RequestIdentityVariant
     for that request.
     """
-    template_name = 'web/private/request_send_detail.html'
+    template_name = 'private/request_send_detail.html'
     context_object_name = 'send_request'
 
     def get_context_data(self, **kwargs):
@@ -148,7 +155,7 @@ class RequestSendUpdateView(RequestSenderPermissionMixin, UpdateView):
     in creation server side 
     """
     form_class = RequestSendUpdateForm
-    template_name = 'web/private/request_send_update.html'
+    template_name = 'private/request_send_update.html'
 
     def get_success_url(self):
         return reverse_lazy('request-send-detail', kwargs={'pk': self.get_object().pk})
@@ -160,14 +167,14 @@ class RequestSendDeleteView(RequestSenderPermissionMixin, DeleteView):
     It uses detail view template
     """
     context_object_name = 'send_request'
-    template_name = 'web/private/request_send_detail.html'
+    template_name = 'private/request_send_detail.html'
     success_url = reverse_lazy('request-send-list')
 
 class RequestSendRequestIdentityVariantCreateView(RequestSenderRequestIdentityVariantPermissionMixin, CreateView):
     """
     View gets post request and creates RequestIdentityVariant for the Request. 
     """
-    template_name = 'web/private/request_send_request_identity_variant_create.html'
+    template_name = 'private/request_send_request_identity_variant_create.html'
     form_class = RequestSendRequestIdentityVariantForm
 
     def get_success_url(self):
@@ -185,7 +192,7 @@ class RequestSendRequestIdentityVariantDetailView(RequestSenderRequestIdentityVa
     View gets RequestIdentityVariant id - pk from the URL, checks if user is a sender of parent object Request, 
     then queries db for that instance, Renders HTML with info or shows 404 if not found.
     """
-    template_name = 'web/private/request_send_request_identity_variant_detail.html'
+    template_name = 'private/request_send_request_identity_variant_detail.html'
     context_object_name = 'request_identity_variant'
 
 class RequestSendRequestIdentityVariantUpdateView(RequestSenderRequestIdentityVariantPermissionMixin, UpdateView):
@@ -195,7 +202,7 @@ class RequestSendRequestIdentityVariantUpdateView(RequestSenderRequestIdentityVa
     User can update the informations and submit the form then view will validate and save to the database, and redirect Request detail view. 
     """
     form_class = RequestSendRequestIdentityVariantForm
-    template_name = 'web/private/request_send_request_identity_variant_update.html'
+    template_name = 'private/request_send_request_identity_variant_update.html'
 
     def get_success_url(self):
         return reverse_lazy('request-send-detail', kwargs={'pk': self.request_send.pk})
@@ -207,7 +214,7 @@ class RequestSendRequestIdentityVariantDeleteView(RequestSenderRequestIdentityVa
     upon success it redirects to the RequestSendDetailView.
     """
     context_object_name = 'request_identity_variant'
-    template_name = 'web/private/request_send_request_identity_variant_detail.html'
+    template_name = 'private/request_send_request_identity_variant_detail.html'
 
     def get_success_url(self):
         return reverse_lazy('request-send-detail', kwargs={'pk': self.request_send.pk})
@@ -219,7 +226,7 @@ class RequestReceiveListView(RequestReceiverPermissionMixin, ListView):
     View fetches Request objects from database where server side user logged in credential
     match the receiver field of the Request object. Then renders HTML page with that list. 
     """
-    template_name = 'web/private/request_receive_list.html'
+    template_name = 'private/request_receive_list.html'
     context_object_name = 'received_requests'
 
 class RequestReceiveDetailView(RequestReceiverPermissionMixin, DetailView):
@@ -229,7 +236,7 @@ class RequestReceiveDetailView(RequestReceiverPermissionMixin, DetailView):
     It also shows RequestIdentityVariant lists for that request, and allows user to update RequestIdentityVariant
     for that request.
     """
-    template_name = 'web/private/request_receive_detail.html'
+    template_name = 'private/request_receive_detail.html'
     context_object_name = 'receive_request'
 
     def get_context_data(self, **kwargs):
@@ -247,7 +254,7 @@ class RequestReceiveRequestIdentityVariantDetailView(RequestReceiverRequestIdent
     View gets RequestIdentityVariant id - pk from the URL, checks if user is a receiver of parent object Request, 
     then queries db for that instance, Renders HTML with info or shows 404 if not found.
     """
-    template_name = 'web/private/request_receive_request_identity_variant_detail.html'
+    template_name = 'private/request_receive_request_identity_variant_detail.html'
     context_object_name = 'request_identity_variant'
 
 class RequestReceiveRequestIdentityVariantUpdateView(RequestReceiverRequestIdentityVariantPermissionMixin, IsRequestAcceptedPermissionMixin, UpdateView):
@@ -257,7 +264,7 @@ class RequestReceiveRequestIdentityVariantUpdateView(RequestReceiverRequestIdent
     User can update the information and submit the form then view will validate and save to the database, and redirect Request detail view. 
     """
     form_class = RequestReceiveRequestIdentityVariantForm
-    template_name = 'web/private/request_receive_request_identity_variant_update.html'
+    template_name = 'private/request_receive_request_identity_variant_update.html'
 
     def get_success_url(self):
         return reverse_lazy('request-receive-detail', kwargs={'pk': self.request_receive.pk})
@@ -273,7 +280,6 @@ class RequestReceiveAcceptView(RequestReceiverPermissionMixin, View):
         request_receive_object.save()  # type: ignore
         return redirect('request-receive-detail', pk=request_receive_object.pk)
 
-
 class RequestReceiveDenyView(RequestReceiverPermissionMixin, View):
     """
     View gets Request id - pk from the URL, checks if user is a receiver of that Request, then it updates the status of that Request to 'denied'.
@@ -286,3 +292,5 @@ class RequestReceiveDenyView(RequestReceiverPermissionMixin, View):
         request_receive_object.status = 'denied'  # type: ignore
         request_receive_object.save()  # type: ignore
         return redirect('request-receive-detail', pk=request_receive_object.pk)  # type: ignore
+
+

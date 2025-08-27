@@ -1,0 +1,18 @@
+<!-- I DID NOT WRITE CODE BELOW coppied from venv/lib/allauth/layout/base.html -->
+<!-- using built in templates from allouth, coppy and ovewrite to add styling and customization -->
+
+{% extends "private/base.html" %}
+
+{% block content %}
+<div class="d-flex gap-4">
+    <a class="btn btn-blue" href="{% url 'account_settings' %}">Account</a>
+    <a class="btn btn-blue" href="{% url 'account_change_password' %}">Change password</a>
+    <a class="btn btn-blue" href="{% url 'account_logout' %}">Sign out</a>
+</div>
+<hr>
+<div>
+
+</div>
+{% block undermenu %}
+{% endblock undermenu %}
+{% endblock %}

@@ -6,7 +6,7 @@ urlpatterns = [
     # public views 
     path('', HomeView.as_view(), name='home'),
     path('accounts/', include('allauth.urls')),
-
+    path('account/settings/', AccountView.as_view(), name='account_settings'),
     # authenticated user views
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
 

@@ -1,0 +1,31 @@
+{% extends "account/account_manage.html"   %}
+
+{% block undermenu%}
+<div class="row align-items-center mb-2">
+    <div class="col">
+        <h2>Account</h2>
+        <p>Information about account.</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="card shadow-lg m">
+            <div class="card-body">
+                <!-- Username -->
+                <p class="text-muted mb-0 small">Username:</p>
+                <h5 class="card-text ps-4">{{ user.username }}</h5>
+
+                <!-- Email -->
+                <p class="text-muted mb-0 mt-3 small">Email:</p>
+                <p class="card-text ps-4">{{ user.email }}</p>
+
+                <!-- Date joined -->
+                <p class="text-muted mb-0 small">Joined:</p>
+                <p class="card-text ps-4">{{ user.date_joined }}</p>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock undermenu %}

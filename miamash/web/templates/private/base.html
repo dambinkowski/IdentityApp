@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Page metadata -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IdentityApp</title>
+
+    <!-- Load Bootstrap 5 -->
+    {% load django_bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% bootstrap_messages %}
+
+    <!-- Load css -->
+    <link rel="stylesheet" href="{% static 'css/private/base.css' %}">
+</head>
+<body class="container-fluid">
+    <!-- Header with navigation  -->
+    <header class="p-3 m-2 mt-3 rounded-3">
+
+        <!-- logo and description  -->
+        <div class="d-flex">
+            <h1 class="text-white display-3">Miamash</h1>
+            <p class="text-white-50 fs-5 ">My Identity App - Manage & Share</p>
+        </div>
+        
+        <!-- Navigation links -->
+        <nav class="row justify-content-center">
+            <ul class="nav justify-content-center gap-3">
+                <li class="nav-item">
+                    <a class="btn btn-blue" href="{% url 'dashboard' %}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-blue" href="{% url 'profile-identity-variant-list' %}">Manage Identity Variants</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-blue" href="{% url 'request-send-list' %}">Send Requests</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-blue" href="{% url 'request-receive-list' %}">Received Requests</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-blue" href="{% url 'account_settings' %}">Account</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main content part -->
+    <main class="main-container p-3 m-2 rounded-3">
+        <div >
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container m-2 rounded-3 mt-auto">
+            <p class="text-center mb-0">&copy; 2025 Miamash</p>
+        </div>
+    </footer>
+
+</body>
+</html>
+
+    
+

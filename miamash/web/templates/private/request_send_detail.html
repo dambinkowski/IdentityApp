@@ -1,11 +1,11 @@
-{% extends "web/private/base.html" %}
+{% extends "private/base.html" %}
 {% block content %}
 
 <!-- Main content header -->
 <div class="row align-items-center mb-2">
     <div class="col">
-        <h2>Received Request Detail</h2>
-        <p>Details for received request</p>
+        <h2>Sent Request Detail</h2>
+        <p>Details for sent request</p>
     </div>
 </div>
 
@@ -18,54 +18,46 @@
                 <!-- Request sender label  and status in one line  -->
                 <div class="d-flex justify-content-between">
                     <div>
-                        <p class="text-muted mb-0 small">Request Sender:</p>
+                        <p class="text-muted mb-0 small">Request Receiver:</p>
                     </div>
                     <!-- Status -->
-                    {% if receive_request.status == "pending" %}
+                    {% if send_request.status == "pending" %}
                     <span class="badge bg-warning">Pending</span>
                     {% endif %}
-                    {% if receive_request.status == "accepted" %}
+                    {% if send_request.status == "accepted" %}
                     <span class="badge bg-success">Accepted</span>
                     {% endif %}
-                    {% if receive_request.status == "denied" %}
+                    {% if send_request.status == "denied" %}
                     <span class="badge bg-danger">Denied</span>
                     {% endif %}
                 </div>
-                <h5 class="card-text ps-4">{{ receive_request.sender }}</h5>
+                <h5 class="card-text ps-4">{{ send_request.sender }}</h5>
 
                 <!-- Context -->
                 <p class="text-muted mb-0 mt-3 small">Reasoning:</p>
-                <p class="card-text ps-4">{{ receive_request.request_reasoning }}</p>
+                <p class="card-text ps-4">{{ send_request.request_reasoning }}</p>
 
                 <!-- Created at -->
                 <p class="text-muted mb-0 small">Created at:</p>
-                <p class="card-text ps-4">{{ receive_request.created_at }}</p>
+                <p class="card-text ps-4">{{ send_request.created_at }}</p>
             </div>
             <!-- Action links -->
             
             <div class="card-footer d-flex gap-4 justify-content-end">
-                <!-- Accept request  (only show if request is pending or denied)-->
-                {% if receive_request.status == "pending" or receive_request.status == "denied" %}
+                <!--  Edit button -->
                 <span>
-                    <form method="POST" action="{% url 'request-receive-accept' receive_request.id %}">
+                    <a class="btn btn-warning me-4" href="{% url 'request-send-update' send_request.id %}">Edit Request</a>
+                </span>
+                <!-- Delete button -->
+                <span>
+                    <form method="POST" action="{% url 'request-send-delete' send_request.id %}">
                         {% csrf_token %}
-                        <button class="btn btn-success" type="submit" onclick="return confirm('Are you sure you want to accept this request?');">
-                            Accept Request
+                        <button class="btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete this request?');">
+                            Delete Request
                         </button>
                     </form>
                 </span>
-                {% endif %}
-                <!-- Deny Request (only show if request is pending or accepted)  -->
-                {% if receive_request.status == "pending" or receive_request.status == "accepted" %}
-                <span>
-                    <form method="POST" action="{% url 'request-receive-deny' receive_request.id %}">
-                        {% csrf_token %}
-                        <button class="btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to deny this request?');">
-                            Deny Request
-                        </button>
-                    </form>
-                </span>
-                {% endif %}
+
             </div>
         </div>
     </div>
@@ -77,8 +69,11 @@
         <h2>Variants requested</h2>
         <p>This is the list of information, that sender would like for you to share with them.</p>
     </div>
+    <div class="col-auto">
+            <a class="btn btn-primary btn-lg" href="{% url 'request-send-request-identity-variant-create' send_request.id %}">Add Variant To Request</a>
+        </div>
+    </div>
 
-</div>
 
 
 {% if request_identity_variants %}
@@ -102,20 +97,17 @@
                             <div class="flex-grow-1"></div>
                             
                             <!-- Shared information (don't show none )-->
-                            <p class="text-muted mb-0 small">Your shared information:</p>
+                            <p class="text-muted mb-0 small"></p>
                             {% if variant.profile_link %}
                             <h5 class="card-text text-center"> {{variant.profile_link.variant}}</h5>
                             {% else %}
                             <p class="card-text text-center">---</p>
                             {% endif %}
                         </div>
-                        <!-- detail link footer (only show if request is accepted) -->
-                        {% if receive_request.status == "accepted" %}
+                        <!-- detail link footer -->
                         <div class="card-footer text-end">
-                            <a class="btn btn-blue" href="{% url 'request-receive-request-identity-variant-detail' variant.request.id variant.id %}">View Details</a>
+                            <a class="btn btn-blue" href="{% url 'request-send-request-identity-variant-detail' variant.request.id variant.id %}"">View Details</a>
                         </div>
-
-                        {% endif %}
                     </div>
                 </div>
             {% endfor %}

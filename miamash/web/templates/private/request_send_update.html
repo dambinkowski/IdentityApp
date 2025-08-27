@@ -1,12 +1,12 @@
-{% extends "web/private/base.html" %}
+{% extends 'private/base.html' %}
 {% block content %}
 {% load django_bootstrap5 %} 
 
 <!-- Main content header -->
 <div class="row align-items-center mb-2">
     <div class="col">
-        <h2>Add Profile Identity Variant</h2>
-        <p>Use the form below to add a new identity variant.</p>
+        <h2>Update Sent Request</h2>
+        <p>Use form below to update sent request.</p>
     </div>
     <hr>
 </div>
@@ -18,13 +18,17 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    {% bootstrap_form form layout='vertical' form_group_class='mb-3'   %}
+                    {% bootstrap_form_errors form type='all' %}
+                    {% bootstrap_form form layout='vertical' form_group_class='mb-3' %}
                     <div class="text-end">
-                        <button type="submit" class="btn btn-blue">Add Variant</button>
+                        <button type="submit" class="btn btn-primary">Update Sent Request</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+
+
 {% endblock %}
