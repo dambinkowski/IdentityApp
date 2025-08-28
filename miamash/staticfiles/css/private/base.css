@@ -1,0 +1,50 @@
+/* Fonts */
+@font-face {
+    font-family: 'MozillaHeadline';
+    src: url(../../fonts/MozillaHeadline-VariableFont_wdth\,wght.ttf) format('truetype'),
+
+}
+
+/* Page Layout  */
+body {
+    font-family: 'MozillaHeadline', Arial, sans-serif;
+    color: #333;
+    background-color: rgb(46, 71, 96);
+    height: 100vh;
+    /* make it to take all height to keep header and footer in a place  */
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Header  */
+header {
+    background-color: #238fee;
+}
+
+.btn-blue {
+    background-color: #437bb0;
+    color: white;
+}
+
+.btn-blue:hover {
+    background-color: #114366;
+    color: white;
+}
+
+/* Main content  */
+main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
+    background-color: #a8cbee;
+}
+
+/* Footer  */
+
+.footer-container {
+    color: white;
+}
+
