@@ -305,3 +305,9 @@ i was wondering about username, i like this functonality of django
 so apperently social accounts have their own templates, if i would continue on the project i would just copy the whole tepmale folder from allauth 
 and then add styling to it
 
+used pythonanywhere, i realized i need to do manual configuration because i used django 5.2, so I set up entire envirement, created static files 
+then got wsgi to work, used git repository to clone it into the server, installed requirements, then i had to redo google access to allow this page 
+added allowed hosts, then bootstrap wasn't working so I troubleshoot that i need to set path well for static files, reseted google access, 
+added in admin to allouth so google also allows that domain there, and it works 
+
+okay next is writing tests and cleaning 
