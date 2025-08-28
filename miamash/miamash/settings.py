@@ -45,14 +45,19 @@ INSTALLED_APPS = [
     'django.contrib.sites',
 
     # third party 
+    #  - API 
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+     # - Api documentation 
+    'drf_spectacular',
+    #  - Allauth for external authentication 
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'drf_spectacular',
+    'allauth.socialaccount.providers.google', 
+    # - styling 
     'django_bootstrap5',
 
     # mine 
@@ -166,6 +171,18 @@ ACCOUNT_SIGNUP_FIELDS   = [
     'password1*',
     'password2*'
     ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 # login redirect URL
 LOGIN_REDIRECT_URL = '/dashboard/'

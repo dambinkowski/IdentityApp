@@ -299,3 +299,9 @@ next is detail views, i wanted to use waring buttnos styling but i overirdden co
 when doing sign in I was reading that the best pracitec is to copy given code from template in allauth and customize it, style it 
 
 as i am going with all auth copying templates i run into {% trans %} did research how it helps building multilangual pages 
+
+okay adding google sign in https://docs.allauth.org/en/dev/socialaccount/providers/google.html 
+i was wondering about username, i like this functonality of django 
+so apperently social accounts have their own templates, if i would continue on the project i would just copy the whole tepmale folder from allauth 
+and then add styling to it
+
