@@ -3,7 +3,8 @@ from rest_framework import status
 from django.urls import reverse 
 from django.contrib.auth import get_user_model
 from core.models import Request, ProfileIdentityVariant, RequestIdentityVariant
-User = get_user_model() # in case of at some point using custom user model
+
+User = get_user_model() # set User model
 
 # import response 
 ## REGISTRATION AND LOGIN ## 

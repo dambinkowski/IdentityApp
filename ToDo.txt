@@ -198,7 +198,7 @@ receiver is a dropdown field by default, for safety i am going to overide that, 
 
 i rememeber having hard time with funcnion based views, that I wanted to have multiple query results for different objects in 
 one view, so I came across funciton get or 404, that would use to get objcets, and combine them dictionary and pass them to template 
-well funcion based view i came across simpler solution that overites context_data where context data is data being passed to template 
+well class based view i came across simpler solution that overites context_data where context data is data being passed to template 
 now in that place add other keys and values to context 
 
 so I am overiding the request, and then funcion is modular, but I know the objcet Request has request_identity_variants that I can call all for 
