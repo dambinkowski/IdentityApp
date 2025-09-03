@@ -1,3 +1,4 @@
+from urllib import response
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -71,63 +72,67 @@ class AuthenticationTests(TestCase):
         # follow redirect 
         response = self.client.get(self.dashboard_url)
         self.assertEqual(response.status_code, 200)
+        # make sure dashboard shows for correct user by checking username  
+        self.assertContains(response, f"Hello {self.valid_username}") 
+    
+    #  user cannot log in with bad credentials
+    def test_user_cannot_login_with_bad_credentials(self):
+        # post login wrong password
+        response = self.client.post(self.login_url, self.wrong_user_login_password_data)
+        # repsonse should be 200 reload the form page with error, not 302 redirect  
+        self.assertEqual(response.status_code, 200)
+
+        # post login wrong username
+        response = self.client.post(self.login_url, self.wrong_user_login_username_data)
+        # response should be 200 reaload the form page with error, not 302 redirect 
+        self.assertEqual(response.status_code, 200)
 
 
-#     # user cannot log in with bad credentials
-#     def test_user_cannot_login_with_bad_credentials(self):
-#         # post login wrong password
-#         response = self.client.post(self.login_url, self.wrong_user_login_password_data)
-#         # repsonse should be 400 Bad Request
-#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    # user can log out 
+    def test_user_can_logout(self):
+        # post login
+        self.client.post(self.login_url, self.valid_user_login_data)
+        # logout 
+        self.client.post(self.logout_url)
+        # now checked if truly logged out, should redirect to login page when trying to access dashboard 
+        response = self.client.get(self.dashboard_url)
+        # should redirect login page 
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/', response.url) # type: ignore 
 
-#         # post login wrong username
-#         response = self.client.post(self.login_url, self.wrong_user_login_username_data)
-#         # response should be 400 Bad Request
-#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    # user can register with good credentials
+    def test_user_can_register_with_good_credentials(self):
+        # post register with valid data, redirect302 should happen to dashboard 
+        response = self.client.post(self.register_url, self.valid_user_registration_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, self.dashboard_url)
+        # then dashboard should load, with correct hello msg 
+        response = self.client.get(response.url) # type: ignore
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"Hello {self.valid_user_registration_data['username']}") 
 
-#     # user can log out
-#     def test_user_can_logout(self):
-#         # post login
-#         self.client.login(username=self.valid_username, password=self.valid_password)
-#         # post logout
-#         response = self.client.post(self.logout_url)
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should have a 'detail' message
-#         self.assertEqual(response.json()['detail'],'Successfully logged out.')
+    # test if user is unique
+    def test_user_cannot_register_with_existing_username(self):
+    # Try to register with an existing username
+        response = self.client.post(self.register_url, {
+            'username': self.valid_username,  # Already exists in setUp
+            'email': 'john1@example.com',     # lets not repeat email 
+            'password1': self.valid_password,
+            'password2': self.valid_password,
+        })
+        # The response should be 200 (form re-rendered with error, not 400)
+        self.assertEqual(response.status_code, 200)
+        # just to make sure url should still be signup
+        self.assertIn('/accounts/signup/', self.register_url)
 
-#     # user can register with good credentials
-#     def test_user_can_register_with_good_credentials(self):
-#         # post register with valid data
-#         response = self.client.post(self.register_url, self.valid_user_registration_data)
-#         # response should be 201 Created
-#         print(response.status_code, response.json())
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         # response data should have a 'key' which is a token
-#         self.assertIn('key', response.json())  
-
-#     # test if user is unique
-#     def test_user_cannot_register_with_existing_username(self):
-#         # post register with existing username
-#         response = self.client.post(self.register_url, username=self.valid_username, email='john1@example.com', password=self.valid_password)
-#         print(response.status_code, response.json())
-#         # response should be 400 Bad Request
-#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#         # response data should have a 'username' error
-#         self.assertIn('username', response.json())
-#         self.assertIn('email', response.json())
-
-#     # user cannot register with bad credentials
-#     def test_user_cannot_register_with_bad_credentials(self):
-#         # post register with invalid data
-#         response = self.client.post(self.register_url, self.invalid_user_registration_data)
-#         # response should be 400 Bad Request
-#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#         # response data should have a 'username', 'email', 'password1', 'password2' errors
-#         self.assertIn('username', response.json())
-#         self.assertIn('email', response.json())
-#         self.assertIn('password1', response.json())
-#         self.assertIn('password2', response.json())
+    # user cannot register with bad credentials
+    def test_user_cannot_register_with_bad_credentials(self):
+        # post register with invalid data
+        response = self.client.post(self.register_url, self.invalid_user_registration_data)
+        # response should be 200 reload the page 
+        self.assertEqual(response.status_code, 200)
+        # page should still be signup 
+        self.assertIn('/accounts/signup/', self.register_url)
         
 
 # ## PROFILE IDENTITY VARIANTS ## 

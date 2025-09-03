@@ -311,3 +311,8 @@ added allowed hosts, then bootstrap wasn't working so I troubleshoot that i need
 added in admin to allouth so google also allows that domain there, and it works 
 
 okay next is writing tests and cleaning 
+
+okay web tests are different, i wrote so many api tests I thought i will have it easy
+but automatic redircts, all auth that i didn't code, so to get whats after I learn i can do follow=True 
+when redircet happens after registration 
+
