@@ -2,6 +2,7 @@ from urllib import response
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from core.models import ProfileIdentityVariant, Request, ProfileIdentityVariant, RequestIdentityVariant
 
 User = get_user_model() # set User model
 
@@ -135,220 +136,223 @@ class AuthenticationTests(TestCase):
         self.assertIn('/accounts/signup/', self.register_url)
         
 
-# ## PROFILE IDENTITY VARIANTS ## 
-# class ProfileIdentityVariantsTests(APITestCase):
-#     def setUp(self):
-#         # Create valid user credentials
-#         self.valid_username = 'Johny'
-#         self.valid_password = 'test123123'
-#         self.valid_email = 'johny@example.com'
-#         # Create a user with valid credentials
-#         self.user = User.objects.create_user(
-#             username=self.valid_username,
-#             email=self.valid_email,
-#             password=self.valid_password,
-#         )  
+## PROFILE IDENTITY VARIANTS ## 
+class ProfileIdentityVariantsTests(TestCase):
+    def setUp(self):
+        # Create valid user credentials
+        self.valid_username = 'Johny'
+        self.valid_password = 'test123123'
+        self.valid_email = 'johny@example.com'
+        # Create a user with valid credentials
+        self.user = User.objects.create_user(
+            username=self.valid_username,
+            email=self.valid_email,
+            password=self.valid_password,
+        )  
 
-#         self.valid_user_login_data = {
-#             'username': 'Johny',
-#             'password': 'test123123',
-#         }
+        self.valid_user_login_data = {
+            'username': 'Johny',
+            'password': 'test123123',
+        }
 
-#         self.valid_identity_variant_data = {
-#             'label': 'First Name',
-#             'context': 'Firstname also known as given name.',
-#             'variant': 'John',
-#         }
+        self.valid_identity_variant_data = {
+            'label': 'First Name',
+            'context': 'Firstname also known as given name.',
+            'variant': 'John',
+        }
 
-#         self.valid_updated_identity_variant_data = {
-#             'label': 'Polish firstname',
-#             'context': 'This has to be Polish letters first name.',
-#             'variant': 'Janusz',
-#         }
-#         # Define URLs for profile identity variants
-#         self.profile_identity_variant_list_create_url = reverse('api-profile-identity-variant-list-create')
-#         self.profile_identity_variant_detail_url = lambda pk: reverse('api-profile-identity-variant-detail', args=[pk])
+        self.valid_updated_identity_variant_data = {
+            'label': 'Polish firstname',
+            'context': 'This has to be Polish letters first name.',
+            'variant': 'Janusz',
+        }
 
-#     # user can create their profile identity variants
-#     def test_user_can_create_their_identity_variants(self):
-#         # log in the user
-#         self.client.login(username=self.valid_username, password=self.valid_password)
-#         # post create profile identity variant
-#         response = self.client.post(self.profile_identity_variant_list_create_url, self.valid_identity_variant_data)
-#         # response should be 201 Created
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         # response data should have a fields 'label', 'context', 'variant'
-#         self.assertIn('label', response.json())
-#         self.assertIn('context', response.json())
-#         self.assertIn('variant', response.json())
-#         # response data should have the same data as the one sent
-#         self.assertEqual(response.json()['label'], self.valid_identity_variant_data['label'])
-#         self.assertEqual(response.json()['context'], self.valid_identity_variant_data['context'])
-#         self.assertEqual(response.json()['variant'], self.valid_identity_variant_data['variant'])
+        # Define URLs for profile identity variants
+        self.profile_identity_variant_list_url = reverse('profile-identity-variant-list')
+        self.profile_identity_variant_create_url = reverse('profile-identity-variant-create')
+        self.profile_identity_variant_detail_url = lambda pk: reverse('profile-identity-variant-detail', args=[pk])
+        self.profile_identity_variant_update_url = lambda pk: reverse('profile-identity-variant-update', args=[pk])
+        self.profile_identity_variant_delete_url = lambda pk: reverse('profile-identity-variant-delete', args=[pk])
 
+    # user can create their profile identity variants
+    def test_user_can_create_their_identity_variants(self):
+        # log in the user
+        self.client.login(username=self.valid_username, password=self.valid_password)
+        # post create profile identity variant
+        create_response = self.client.post(self.profile_identity_variant_create_url, self.valid_identity_variant_data)
+        # respond should be 302 redirect to list view
+        self.assertEqual(create_response.status_code, 302)
+        self.assertRedirects(create_response, self.profile_identity_variant_list_url)
+        # lets check if it exist in db now, latest added variant should be same as just created valius
+        variant = ProfileIdentityVariant.objects.filter(user__username=self.valid_username).latest('id')
+        self.assertEqual(variant.label, self.valid_identity_variant_data['label'])
+        self.assertEqual(variant.context, self.valid_identity_variant_data['context'])
+        self.assertEqual(variant.variant, self.valid_identity_variant_data['variant'])
 
-#     # stranger cannot create users profile identity variants
-#     def test_stranger_cannot_create_users_identity_variants(self):
-#         # post create profile identity variant without logging in
-#         response = self.client.post(self.profile_identity_variant_list_create_url, self.valid_identity_variant_data)
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
+    # stranger cannot create users profile identity variants
+    def test_stranger_cannot_create_users_identity_variants(self):
+        # post create profile identity variant without logging in
+        response = self.client.post(self.profile_identity_variant_create_url, self.valid_identity_variant_data)
+        # response should be 302 redirect to login 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/profile/identity-variant/add/')
 
 #     # user can see their identity varians 
-#     def test_user_can_see_their_identity_variants(self):
-#         # post login
-#         self.client.login(username=self.valid_username, password=self.valid_password)
-#         # get profile identity variants
-#         response = self.client.get(self.profile_identity_variant_list_create_url)
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should be a list
-#         self.assertIsInstance(response.json(), list)
+    def test_user_can_see_their_identity_variants(self):
+        # post login
+        self.client.login(username=self.valid_username, password=self.valid_password)
+        # create variant, and get list 
+        self.client.post(self.profile_identity_variant_create_url, self.valid_identity_variant_data)
+        response = self.client.get(self.profile_identity_variant_list_url)
+        # response should be 200 OK
+        self.assertEqual(response.status_code, 200)
+        # response data should contain new variant 
+        self.assertContains(response, self.valid_identity_variant_data['label'])
+        self.assertContains(response, self.valid_identity_variant_data['context'])
+        self.assertContains(response, self.valid_identity_variant_data['variant'])
+
 
 #     # stranger cannot see users profile identity variants 
-#     def test_stranger_cannot_see_users_identity_variants(self):
-#         # get profile identity variants without logging in
-#         response = self.client.get(self.profile_identity_variant_list_create_url)
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_see_users_identity_variants(self):
+        # get profile identity variants without logging in
+        response = self.client.get(self.profile_identity_variant_list_url)
+        # response should be 302 redirect to login 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/profile/identity-variant/')
 
 #     # user can update their profile identity variants 
-#     def test_user_can_update_their_identity_variants(self):
-#         # post login
-#         self.client.login(username=self.valid_username, password=self.valid_password)
-#         # create a profile identity variant
-#         create_response = self.client.post(self.profile_identity_variant_list_create_url, self.valid_identity_variant_data)
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created profile identity variant id
-#         identity_variant_id = create_response.json()['id']
-#         # post update profile identity variant
-#         response = self.client.put(self.profile_identity_variant_detail_url(identity_variant_id), self.valid_updated_identity_variant_data)
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should have the updated data
-#         self.assertEqual(response.json()['label'], self.valid_updated_identity_variant_data['label'])
-#         self.assertEqual(response.json()['context'], self.valid_updated_identity_variant_data['context'])
-#         self.assertEqual(response.json()['variant'], self.valid_updated_identity_variant_data['variant'])
+    def test_user_can_update_their_identity_variants(self):
+        # post login
+        self.client.login(username=self.valid_username, password=self.valid_password)
+        # create a profile identity variant
+        self.client.post(self.profile_identity_variant_create_url, self.valid_identity_variant_data)
+        update_response = self.client.post(self.profile_identity_variant_update_url(1), self.valid_updated_identity_variant_data, follow=True)
+        # after edit and follow redirect to list of variants now list should have variant with updated value 
+        # response data should contain new variant 
+        self.assertContains(update_response, self.valid_updated_identity_variant_data['label'])
+        self.assertContains(update_response, self.valid_updated_identity_variant_data['context'])
+        self.assertContains(update_response, self.valid_updated_identity_variant_data['variant'])
 
 #     # stranger cannot update users profile identity variants
-#     def test_stranger_cannot_update_users_identity_variants(self):
-#         # log in, create variant, log out and try to access it as stranger to update 
-#         self.client.login(username=self.valid_username, password=self.valid_password)
-#         create_response = self.client.post(self.profile_identity_variant_list_create_url, self.valid_identity_variant_data)
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         identity_variant_id = create_response.json()['id']
-#         self.client.logout()    
-#         # now try to update as stranger
-#         response = self.client.put(self.profile_identity_variant_detail_url(identity_variant_id), self.valid_updated_identity_variant_data)
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_update_users_identity_variants(self):
+        # log in, create variant, log out and try to access it as stranger to update 
+        self.client.login(username=self.valid_username, password=self.valid_password)
+        self.client.post(self.profile_identity_variant_create_url, self.valid_identity_variant_data)
+        self.client.logout()    
+        # now try to update as stranger
+        response = self.client.put(self.profile_identity_variant_detail_url(1), self.valid_updated_identity_variant_data)
+        # response should be 302 redirect to login 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/profile/identity-variant/1/')
 
 #     # user can delete their profile identity variants
-#     def test_user_can_delete_their_identity_variants(self):
-#         # post login
-#         self.client.login(username=self.valid_username, password=self.valid_password)
-#         # create a profile identity variant
-#         create_response = self.client.post(self.profile_identity_variant_list_create_url, self.valid_identity_variant_data)
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created profile identity variant id
-#         identity_variant_id = create_response.json()['id']
-#         # post delete profile identity variant
-#         response = self.client.delete(self.profile_identity_variant_detail_url(identity_variant_id))
-#         # response should be 204 No Content
-#         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    def test_user_can_delete_their_identity_variants(self):
+        # login, create 
+        self.client.login(username=self.valid_username, password=self.valid_password)
+        self.client.post(self.profile_identity_variant_create_url, self.valid_identity_variant_data)
+        # post delete profile identity variant
+        response = self.client.post(self.profile_identity_variant_delete_url(1), follow=True)
+        # now redirect should be list that no longer contain the variant 
+        self.assertNotContains(response, self.valid_identity_variant_data['label'])
+        self.assertNotContains(response, self.valid_identity_variant_data['context'])
+        self.assertNotContains(response, self.valid_identity_variant_data['variant'])
 
 #     # stranger cannot delete users profile identity variants
 #     def test_stranger_cannot_delete_users_identity_variants(self):
-#         # log in, create variant, log out and try to access it as stranger to delete 
-#         self.client.login(username=self.valid_username, password=self.valid_password)
-#         create_response = self.client.post(self.profile_identity_variant_list_create_url, self.valid_identity_variant_data)
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         identity_variant_id = create_response.json()['id']
-#         self.client.logout()    
-#         # now try to delete as stranger
-#         response = self.client.delete(self.profile_identity_variant_detail_url(identity_variant_id))
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        # log in, create variant, log out and try to access it as stranger to update 
+        self.client.login(username=self.valid_username, password=self.valid_password)
+        self.client.post(self.profile_identity_variant_create_url, self.valid_identity_variant_data)
+        self.client.logout()   
+        # now try to delete as stranger
+        response = self.client.post(self.profile_identity_variant_delete_url(1))
+        # response should be 302 redirect to login 
+        self.assertRedirects(response, '/accounts/login/?next=/profile/identity-variant/1/delete/')
 
     
 
 
 # ## REQUESTS ## 
 # # Send 
-# class RequestsSendTests(TestCase):
-#     def setUp(self):
-#         # I need at least two users to test requests between them
-#         # Create valid user credentials
-#         self.valid_username1 = 'Johny'
-#         self.valid_password1 = 'test123123'
-#         self.valid_email1 = 'johny@example.com'
-#         # Create a user with valid credentials
-#         self.user = User.objects.create_user(
-#             username=self.valid_username1,
-#             email=self.valid_email1,
-#             password=self.valid_password1,
-#         )  
-#         self.valid_user1_login_data = {
-#             'username': 'Johny',
-#             'password': 'test123123',
-#         }
+class RequestsSendTests(TestCase):
+    def setUp(self):
+        # I need at least two users to test requests between them
+        # Create valid user credentials
+        self.valid_username1 = 'Johny'
+        self.valid_password1 = 'test123123'
+        self.valid_email1 = 'johny@example.com'
+        # Create a user with valid credentials
+        self.user = User.objects.create_user(
+            username=self.valid_username1,
+            email=self.valid_email1,
+            password=self.valid_password1,
+        )  
+        self.valid_user1_login_data = {
+            'username': 'Johny',
+            'password': 'test123123',
+        }
 
-#         self.valid_username2 = 'Michael'
-#         self.valid_password2 = 'test123123'
-#         self.valid_email2 = 'michael@example.com'
-#         # Create a user with valid credentials
-#         self.user2 = User.objects.create_user(
-#             username=self.valid_username2,
-#             email=self.valid_email2,
-#             password=self.valid_password2,
-#         )
-#         self.valid_user2_login_data = {
-#             'username': 'Michael',
-#             'password': 'test123123',
-#         }
+        self.valid_username2 = 'Michael'
+        self.valid_password2 = 'test123123'
+        self.valid_email2 = 'michael@example.com'
+        # Create a user with valid credentials
+        self.user2 = User.objects.create_user(
+            username=self.valid_username2,
+            email=self.valid_email2,
+            password=self.valid_password2,
+        )
+        self.valid_user2_login_data = {
+            'username': 'Michael',
+            'password': 'test123123',
+        }
 
-#         # user that will try to do malicuous actions
-#         self.valid_username3 = 'Ezma'
-#         self.valid_password3 = 'test123123'
-#         self.valid_email3 = 'ezma@example.cam'
-#         # Create a user with valid credentials
-#         self.user3 = User.objects.create_user(
-#             username=self.valid_username3,
-#             email=self.valid_email3,
-#             password=self.valid_password3,
-#         )
-#         self.valid_user3_login_data = {
-#             'username': 'Ezma',
-#             'password': 'test123123',
-#         }
+        # user that will try to do malicuous actions
+        self.valid_username3 = 'Ezma'
+        self.valid_password3 = 'test123123'
+        self.valid_email3 = 'ezma@example.cam'
+        # Create a user with valid credentials
+        self.user3 = User.objects.create_user(
+            username=self.valid_username3,
+            email=self.valid_email3,
+            password=self.valid_password3,
+        )
+        self.valid_user3_login_data = {
+            'username': 'Ezma',
+            'password': 'test123123',
+        }
 
-#         self.valid_request_identity_variant_data = {
-#             'label': 'First Name in Polish',
-#             'context': 'First name in Polish language.',
-#         }   
+        self.valid_request_identity_variant_data = {
+            'label': 'First Name in Polish',
+            'context': 'First name in Polish language.',
+        }   
 
-#         # Define URLs for requests
-#         self.request_send_list_create_url = reverse('api-request-send-list-create')
-#         self.request_send_detail_url = lambda pk: reverse('api-request-send-detail', args=[pk]) 
-#         self.request_send_request_identity_variant_list_create_url = lambda pk: reverse('api-request-send-request-identity-variant-list-create', args=[pk])
-#         self.request_send_request_identity_variant_detail_url = lambda pk, request_identity_variant_pk: reverse('api-request-send-request-identity-variant-detail', args=[pk, request_identity_variant_pk])
+        # Define URLs for requests
+        self.request_send_list_url = reverse('request-send-list')
+        self.request_send_create_url = reverse('request-send-create')
+        self.request_send_detail_url = lambda pk: reverse('request-send-detail', args=[pk])
+        self.request_send_update_url = lambda pk: reverse('request-send-update', args=[pk])
+        self.request_send_delete_url = lambda pk: reverse('request-send-delete', args=[pk])
+        
+        # RequestSendRequestIdentityVariant URLs
+        self.request_send_request_identity_variant_create_url = lambda pk: reverse('request-send-request-identity-variant-create', args=[pk])
+        self.request_send_request_identity_variant_detail_url = lambda pk, riv_pk: reverse('request-send-request-identity-variant-detail', args=[pk, riv_pk])
+        self.request_send_request_identity_variant_update_url = lambda pk, riv_pk: reverse('request-send-request-identity-variant-update', args=[pk, riv_pk])
+        self.request_send_request_identity_variant_delete_url = lambda pk, riv_pk: reverse('request-send-request-identity-variant-delete', args=[pk, riv_pk])
 
+        
 #     # user can create new sent requests
-#     def test_user_can_create_new_sent_requests(self):
-#         # post login
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'I need your identity information for this test.'})
-#         # response should be 201 Created
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         # response data should have a 'receiver' field with the username of the receiver
-#         self.assertIn('receiver_username', response.json())
-#         self.assertEqual(response.json()['receiver_username'], self.valid_username2)
-#         self.assertIn('request_reasoning', response.json())
-#         self.assertEqual(response.json()['request_reasoning'], 'I need your identity information for this test.')
+    def test_user_can_create_new_sent_requests(self):
+        # post login
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        # post create request
+        response = self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':'I need your identity information for this test.'}, follow=True)
+        # response should be 200 after redirect 
+        self.assertEqual(response.status_code, 200)
+        print(response.content.decode())
+        # now the page should have request details with all the new request information present in html
+        self.assertContains(response, self.valid_username2)
+        self.assertContains(response, 'I need your identity information for this test.')
+
+
 
 #     # user can not create sent requests for other users, checking post injections 
 #     def test_user_cannot_create_sent_requests_for_other_users(self):

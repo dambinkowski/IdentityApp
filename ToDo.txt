@@ -316,3 +316,11 @@ okay web tests are different, i wrote so many api tests I thought i will have it
 but automatic redircts, all auth that i didn't code, so to get whats after I learn i can do follow=True 
 when redircet happens after registration 
 
+okay i tried to test redirect url and then login but then I realzied allouth does this cool thing that 
+when I tried to access createProfileIdentityVariant, it does that goes to login with telling where to go next 
+inteasd of standard dashboard, so I just hardcoded that i am not sure if that ideal for testing but well 
+it insures that stranger can't access and login page shows 
+
+as i was doing testing, i couldn't understand why send requset is not passing, then after literrly getting all html 
+response i found that i am not showing receiver username, but sender, i missed it, but test didn't 
+
