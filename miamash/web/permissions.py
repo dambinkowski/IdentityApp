@@ -41,6 +41,10 @@ class RequestSenderRequestIdentityVariantPermissionMixin(LoginRequiredMixin, Vie
     # since RequestIdentityVariant object is a chil of Request object, for creation safety 
     # overiding dispatch method is also nessesery 
     def dispatch(self, request, *args, **kwargs):
+        # handle not authenticated user where there is no request.sender 
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        # if user authenticated, check if has parent permission, or 404 they don't have such a resaurce access 
         self.request_send = get_object_or_404(Request, pk=kwargs['pk'], sender=request.user)  # only expose when there is match of PK from URL and the sender is request.user 
         return super().dispatch(request, *args, **kwargs)
     
@@ -75,6 +79,10 @@ class RequestReceiverRequestIdentityVariantPermissionMixin(LoginRequiredMixin, V
     # since RequestIdentityVariant object is a chil of Request object, for creation safety 
     # overiding dispatch method is also nessesery 
     def dispatch(self, request, *args, **kwargs):
+        # handle not authenticated user where there is no request.sender 
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        # if user authenticated, check if has parent permission, or 404 they don't have such a resaurce access 
         self.request_receive = get_object_or_404(Request, pk=kwargs['pk'], receiver=request.user)  # only expose when there is match of PK from URL and the receiver is request.user 
         return super().dispatch(request, *args, **kwargs)
     

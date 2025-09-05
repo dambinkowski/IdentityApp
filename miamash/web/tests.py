@@ -325,6 +325,14 @@ class RequestsSendTests(TestCase):
             'context': 'First name in Polish language.',
         }   
 
+        self.valid_updated_request_identity_variant_data = {
+            'label': 'Super First Name in Polish',
+            'context': 'Super first name in Polish language.',
+        }
+
+        self.valid_request_reasoning = 'Dental office requesting information'
+        self.valid_updated_reasoning = 'Super Dental office requesting information'
+
         # Define URLs for requests
         self.request_send_list_url = reverse('request-send-list')
         self.request_send_create_url = reverse('request-send-create')
@@ -344,561 +352,370 @@ class RequestsSendTests(TestCase):
         # post login
         self.client.login(username=self.valid_username1, password=self.valid_password1)
         # post create request
-        response = self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':'I need your identity information for this test.'}, follow=True)
+        response = self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning}, follow=True)
         # response should be 200 after redirect 
         self.assertEqual(response.status_code, 200)
-        print(response.content.decode())
+        # print(response.content.decode())
         # now the page should have request details with all the new request information present in html
         self.assertContains(response, self.valid_username2)
-        self.assertContains(response, 'I need your identity information for this test.')
+        self.assertContains(response, self.valid_request_reasoning)
 
 
 
 #     # user can not create sent requests for other users, checking post injections 
-#     def test_user_cannot_create_sent_requests_for_other_users(self):
-#         # user3 is malicious user trying to create request from user1 to user2, that should not be possible 
-#         # server does not take client data for sender, it uses loged in credentials to determine that
-#         # so the result should be still suscessful, but the sender will be user3, not user1
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # post create request
-#         response = self.client.post(self.request_send_list_create_url, {
-#             'sender_username': self.valid_username1,  # injection attempt to change sender, should be ignored by server 
-#             'receiver_username': self.valid_username2,
-#             'request_reasoning': 'Createing a request from user1 to user2, but I am malicious Emza - user3.'
-#         })
-#         # response should be 201 Created
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         # response data should have a 'receiver' field with the username of the receiver
-#         self.assertIn('receiver_username', response.json())
-#         self.assertEqual(response.json()['receiver_username'], self.valid_username2)
-#         self.assertIn('request_reasoning', response.json())
-#         self.assertEqual(response.json()['request_reasoning'], 'Createing a request from user1 to user2, but I am malicious Emza - user3.')
-#         data = response.json()
-#         # since response does not contain sender_username, i am going to pull request from database to check sender
-#         # and it should be user3, not malicious attept to change it to user1
-#         req = Request.objects.get(id=data['id'])
-#         self.assertEqual(req.sender, self.user3) # should be user3/logged in user, not user1
-#         self.assertNotEqual(req.sender, self.user) # should not be user1, as it was injection attempt
+    def test_user_cannot_create_sent_requests_for_other_users(self):
+        # user 3 Ezma, tryes to create request for other users 
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.post(self.request_send_create_url, {
+            'sender': self.valid_username1,  # injection attempt to change sender, should be ignored by server 
+            'receiver': self.valid_username2,
+            'request_reasoning': 'Createing a request from user1 to user2, but I am malicious Emza - user3.'
+        }, follow=True)
+        # it should be sucsesfull, but not the way malicious user planned, because sender is server side written 
+        self.assertEqual(response.status_code, 200)
+        #  check that sender should be logged in user, not attempted valid_username1, by getting just created request from db 
+        latest_request = Request.objects.latest('id')
+        self.assertNotEqual(latest_request.sender.username, self.valid_username1) # server should not set sender from injoection 
+        self.assertEqual(latest_request.sender.username, self.valid_username3)
 
 #     # stranger cannot create sent requests for users
-#     def test_stranger_cannot_create_sent_requests_for_users(self):
-#         # post create request without logging in
-#         response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'I just want your data'})
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_create_sent_requests_for_users(self):
+        # post create request without logging in
+        response = self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        # response should be 302 redirect to login
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/create/')
 
-#     # user can see their sent requests
-#     def test_user_can_see_their_sent_requests(self):
-#         # post login
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'This is dental office, we need your identity information.'})
-#         # get sent requests
-#         response = self.client.get(self.request_send_list_create_url)
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should be a list
-#         self.assertIsInstance(response.json(), list)
-#         # response data should have the created request
-#         self.assertGreater(len(response.json()), 0)  # should have at least one request
-#         # check if the created request is in the response data
-#         created_request = response.json()[0]
-#         self.assertEqual(created_request['receiver_username'], self.valid_username2)
-#         self.assertEqual(created_request['request_reasoning'], 'This is dental office, we need your identity information.')
+    # user can see their sent requests
+    def test_user_can_see_their_sent_requests(self):
+        # post login
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        # post create request
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        # now list should have that created request 
+        response = self.client.get(self.request_send_list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.valid_username2)
+        self.assertContains(response, self.valid_request_reasoning)
 
 
-#     # user can not see other users sent requests, as they are not sender
-#     def test_user_cannot_see_other_users_sent_requests(self):
-#         # user3 can not see user1 sent requests, as Ezma is not a sender    
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'This is dental office, we need your identity information.'})
-#         # now log in user3
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # get sent requests
-#         response = self.client.get(self.request_send_list_create_url)
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should be a list
-#         self.assertIsInstance(response.json(), list)
-#         # response data should be empty, as user3 is not sender of any requests
-#         self.assertEqual(len(response.json()), 0)
+    # user can not see other users sent requests, as they are not sender
+    def test_user_cannot_see_other_users_sent_requests(self):
+        # user3 can not see user1 sent requests, as Ezma is not a sender    
+        # post login user1
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # now log in user3, and get list 
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.get(self.request_send_list_url)
+        # response should be 200 OK, but list should not have user1 request
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, self.valid_username2)
+        self.assertNotContains(response, self.valid_request_reasoning)
 
-#     # stranger cannot see users sent requests
-#     def test_stranger_cannot_see_users_sent_requests(self):
-#         # post get sent requests without logging in
-#         response = self.client.get(self.request_send_list_create_url)
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    # stranger cannot see users sent requests
+    def test_stranger_cannot_see_users_sent_requests(self):
+        # post get sent requests without logging in
+        response = self.client.get(self.request_send_list_url)
+        # stranger should be redirected to try to login 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/')
 
-#     # user can see details of their sent requests
-#     def test_user_can_see_details_of_their_sent_requests(self):
-#         # post login
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # get details of the sent request
-#         response = self.client.get(self.request_send_detail_url(request_id))
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should have the created request details
-#         self.assertIn('receiver_username', response.json())
-#         self.assertEqual(response.json()['receiver_username'], self.valid_username2)
-#         self.assertIn('request_reasoning', response.json())
-#         self.assertEqual(response.json()['request_reasoning'], 'Dental office data request.')
+    # user can see details of their sent requests
+    def test_user_can_see_details_of_their_sent_requests(self):
+        # post login and create request 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        # get detail for that request
+        response = self.client.get(self.request_send_detail_url(1))
+        # should be 200 and include the request information
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.valid_username2)
+        self.assertContains(response, self.valid_request_reasoning)
 
-#     # user cannot see details of other users sent requests, as they are not sender
-#     def test_user_cannot_see_details_of_other_users_sent_requests(self):
-#         # malicious Ezma (user3) can not see user1 detail sent request, as user3 is not a sender 
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # now log in Ezma
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # get details of the sent request
-#         response = self.client.get(self.request_send_detail_url(request_id))
-#         # response should be 404 Not Found, as user3 is not sender of this request
-#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    # user cannot see details of other users sent requests, as they are not sender
+    def test_user_cannot_see_details_of_other_users_sent_requests(self):
+        # malicious Ezma (user3) can not see user1 detail sent request, as user3 is not a sender 
+        # login and create request as user 1, logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # now Ezma will try to access it
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.get(self.request_send_detail_url(1))
+        # respond should be 404, since ezma cant even see request id 1 
+        self.assertEqual(response.status_code, 404)
 
 #     # stranger cannot see users sent requests details
-#     def test_stranger_cannot_see_users_sent_requests_details(self):
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         self.client.logout()  # log out user1
-#         # now try to get details as stranger
-#         response = self.client.get(self.request_send_detail_url(request_id))
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_see_users_sent_requests_details(self):
+        # strangel will try to see without loging in 
+        # login and create request as user 1, logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # stranger tries to get details 
+        response = self.client.get(self.request_send_detail_url(1))
+        # stranger should be redirected to try to login 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/1/')
 
 #     # user can update their sent requests
-#     def test_user_can_update_their_sent_requests(self):
-#         # post login
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # post update request
-#         response = self.client.put(self.request_send_detail_url(request_id), {'receiver_username': self.valid_username2, 'request_reasoning':'Super dental office data request.'})
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should have the updated data
-#         self.assertIn('receiver_username', response.json())
-#         self.assertEqual(response.json()['receiver_username'], self.valid_username2)
-#         self.assertIn('request_reasoning', response.json())
-#         self.assertEqual(response.json()['request_reasoning'], 'Super dental office data request.')
+    def test_user_can_update_their_sent_requests(self):
+        # login and create one 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        # now update 
+        response = self.client.post(self.request_send_update_url(1), {'request_reasoning':self.valid_updated_reasoning}, follow=True)
+        # now updated after follow detail view should contain new udpated data 
+        self.assertContains(response, self.valid_updated_reasoning)
+       
 
 #     # user cannot update other users sent requests, as they are not sender
-#     def test_user_cannot_update_other_users_sent_requests(self):
-#         # Ezma  can not update user1 sent requests, as user3 is not sender
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # now log in user3
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # post update request
-#         response = self.client.put(self.request_send_detail_url(request_id), {'receiver_username': self.valid_username2, 'request_reasoning':'Malicious attempt to update request.'})
-#         # since this system queries from database only requests where sender is logged in user, so trying to get that id request will just result not found 
-#         # response should be 404 Not Found, as user3 is not sender of this request
-#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_user_cannot_update_other_users_sent_requests(self):
+        # user 3 tries to update users1 request 
+        # login user 1, create request logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # login user3 try to post update 
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.post(self.request_send_update_url(1), {'request_reasoning':self.valid_updated_reasoning}, follow=True)
+        # since user3 doesnt even see requenst id 1 it should be 404 not found 
+        self.assertEqual(response.status_code, 404)
 
 #     # stranger cannot update users sent requests
-#     def test_stranger_cannot_update_users_sent_requests(self):
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.client.logout()  # log out user1
-#         # now try to update as stranger
-#         # post update request without logging in
-#         response = self.client.put(self.request_send_detail_url(create_response.json()['id']), {'receiver_username': self.valid_username2, 'request_reasoning':'Malicious attempt to update request.'})
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_update_users_sent_requests(self):
+        # stranger tries to updates users request by using the request id 
+        # login user 1, create request logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # now stranger tries to update that request 
+        response = self.client.post(self.request_send_update_url(1), {'request_reasoning':self.valid_updated_reasoning})
+        # response shold be redirect to login page 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/1/edit/')
 
 #     # user can delete their sent requests
-#     def test_user_can_delete_their_sent_requests(self):
-#         # post login
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # post delete request
-#         response = self.client.delete(self.request_send_detail_url(request_id))
-#         # response should be 204 No Content
-#         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    def test_user_can_delete_their_sent_requests(self):
+        # login and create request 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        # now delete the request
+        response = self.client.post(self.request_send_delete_url(1), follow=True)
+        # after delete redirected result should be list of request and since deleted it shouldnt be there 
+        self.assertNotContains(response, self.valid_username2)
+        self.assertNotContains(response, self.valid_request_reasoning)
+
 
 #     # other user cannot delete users sent requests, as they are not sender
-#     def test_user_cannot_delete_other_users_sent_requests(self):
-#         # user3 can not delete user1 sent requests, as user3 is not sender    
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # now log in user3
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # post delete request
-#         response = self.client.delete(self.request_send_detail_url(request_id))
-#         # response should be 404 Not Found, as user3 is not sender of this request
-#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_user_cannot_delete_other_users_sent_requests(self):
+        # user 3 tries to delete users1 request 
+        # login user 1, create request logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # login user3 try to delete users 1 request 
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.post(self.request_send_delete_url(1))
+        # response should be 404 not found, since user 3 does not even see such a resource from db 
+        self.assertEqual(response.status_code, 404)
+
 
 #     # stranger cannot delete users sent requests
-#     def test_stranger_cannot_delete_users_sent_requests(self):
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.client.logout()  # log out user1
-#         # now try to delete as stranger
-#         # post delete request without logging in
-#         response = self.client.delete(self.request_send_detail_url(create_response.json()['id']))
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_delete_users_sent_requests(self):
+        # stranger will try to delete users 1 request id1 
+        # login user 1, create request logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # now try to delete as stranger 
+        response = self.client.post(self.request_send_delete_url(1))
+        # response shold be redirect to login page 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/1/delete/')
 
-#     # user can create request identity variants for their sent requests
-#     def test_user_can_create_request_identity_variants_for_sent_requests(self): 
-#         # post login
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # post create request identity variant
-#         response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         # response should be 201 Created
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         # response data should have a 'label', 'context', 'variant' fields
-#         self.assertIn('label', response.json())
-#         self.assertIn('context', response.json())
+    # user can create request identity variants for their sent requests
+    def test_user_can_create_request_identity_variants_for_sent_requests(self): 
+        # post login, and create request 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        # now create request identity variant
+        response = self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        # followed page should now have variant data
+        self.assertContains(response, self.valid_request_identity_variant_data['label'])
+        self.assertContains(response, self.valid_request_identity_variant_data['context'])
 
-#         # response data should have the same data as the one sent
-#         self.assertEqual(response.json()['label'], self.valid_request_identity_variant_data['label'])
-#         self.assertEqual(response.json()['context'], self.valid_request_identity_variant_data['context'])
 
 #     # user cannot create request identity variants for other users sent requests, as they are not sender
-#     def test_user_cannot_create_request_identity_variants_for_other_users_sent_requests(self):  
-#         # Ezma user3 can not create request identity variants for user1 sent requests, as user3 is not sender    
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # now log in user3
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # post create request identity variant
-#         response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         # response should be 404 Not Found, as user3 is not sender of this request
-#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_user_cannot_create_request_identity_variants_for_other_users_sent_requests(self):  
+        # Emza cant create request identity variant for user 1 request 
+        # login in as user1, create request, logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()
+        # now log in as user3 and try to add RequestIdentityVariant to users1 request 
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        # response should be 404 not found since user3 cant even see request id 1
+        self.assertEqual(response.status_code, 404)
 
 #     # stranger cannot create request identity variants for users sent requests
-#     def test_stranger_cannot_create_request_identity_variants_for_users_sent_requests(self):
-#         # post login user1
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.client.logout()  # log out user1
-#         # now try to create request identity variant as stranger
-#         response = self.client.post(self.request_send_request_identity_variant_list_create_url(create_response.json()['id']), self.valid_request_identity_variant_data)
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)        
+    def test_stranger_cannot_create_request_identity_variants_for_users_sent_requests(self):
+        # stranger will try to add RequestIdentityVariant to users1 request 
+        # login in as user1, create request, logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.logout()      
+        # now stranger tries to add variant 
+        response = self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data)
+        # response should be redirect to login page for not authenticated user 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/1/request-identity-variant/create/')
 
     
 # # user can see their request identity variants for sent requests
-#     def test_user_can_see_their_request_identity_variants_for_sent_requests(self):  
-#         # post login
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         # post create request
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_response.json()['id']
-#         # post create request identity variant
-#         self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         # get request identity variants for sent requests
-#         response = self.client.get(self.request_send_request_identity_variant_list_create_url(request_id))
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should be a list
-#         self.assertIsInstance(response.json(), list)
-#         # response data should have the created request identity variant
-#         self.assertGreater(len(response.json()), 0)
-#         # check if the created request identity variant is in the response data
-#         created_request_identity_variant = response.json()[0]
-#         self.assertEqual(created_request_identity_variant['label'], self.valid_request_identity_variant_data['label'])
-#         self.assertEqual(created_request_identity_variant['context'], self.valid_request_identity_variant_data['context'])      
+    def test_user_can_see_their_request_identity_variants_for_sent_requests(self):  
+        # post login, and create request, create variant for request 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        # now get detail view to view it 
+        response = self.client.get(self.request_send_request_identity_variant_detail_url(1, 1))
+        # response should be 200, and the html should have label and variant data 
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.valid_request_identity_variant_data['label'])
+        self.assertContains(response, self.valid_request_identity_variant_data['context'])
 
 #     # user cannot see other users request identity variants for sent requests, as they are not sender
-#     def test_user_cannot_see_other_users_request_identity_variants_for_sent_requests(self):
-#         # Ezma (user3) can not see user1 request identity variants for sent requests, as Ezma not sender    
-#         # post login user1, create request and request identity variant
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_request_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         # response should be 201 Created
-#         self.assertEqual(create_request_response.status_code, status.HTTP_201_CREATED)
-#         # get the created request id
-#         request_id = create_request_response.json()['id']
-#         # post create request identity variant
-#         create_request_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         # response should be 201 Created
-#         self.assertEqual(create_request_variant_response.status_code, status.HTTP_201_CREATED)
-#         responseGotData = self.client.get(self.request_send_request_identity_variant_list_create_url(request_id))
-#         # response got data sohuld be 200 OK and should contain the created request identity variant
-#         self.assertEqual(responseGotData.status_code, status.HTTP_200_OK)
-#         self.assertIsInstance(responseGotData.json(), list)
-#         self.assertGreater(len(responseGotData.json()), 0)
-#         # check if the created request identity variant is in the response data
-#         created_request_identity_variant = responseGotData.json()[0]
-#         self.assertEqual(created_request_identity_variant['label'], self.valid_request_identity_variant_data['label'])
-#         self.assertEqual(created_request_identity_variant['context'], self.valid_request_identity_variant_data['context'])
-#         # log out user1 and log in user3
-#         self.client.logout()
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # now malicious Ezma (user3) tries to see request identity variants that user1 sent to user2
-#         # DRF does not check parent permissions, Security-through-obscurity 
-#         response = self.client.get(self.request_send_request_identity_variant_list_create_url(request_id))
-#         # response should de 200, but it should be different then responseGotData
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should be a list
-#         self.assertIsInstance(response.json(), list)
-#         # response data should be empty, as user3 is not sender of any requests
-#         self.assertEqual(len(response.json()), 0)
-#         # there should be no label or context in the response data
-#         self.assertNotIn('label', response.json())
-#         self.assertNotIn('context', response.json())
-#         # response data should be different for user1 that is sender and user3 that is not sender
-#         self.assertNotEqual(responseGotData.json(), response.json())
-
-#     # user can see request identity variants detail
-#     def test_user_can_see_request_identity_variants_detail(self):
-#         # post login, create request, and create request identity variant
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         # i have request_id and request identity variant id, now i can get the request identity variant detail
-#         response = self.client.get(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id))
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should have the created request identity variant details
-#         self.assertIn('label', response.json())
-#         self.assertEqual(response.json()['label'], self.valid_request_identity_variant_data['label'])
-#         self.assertIn('context', response.json())
-#         self.assertEqual(response.json()['context'], self.valid_request_identity_variant_data['context'])
-#         print("Response line 710", response.json()['label'])
-
-#     # user can not see other users request identity variants detail
-#     def test_user_cannot_see_other_users_request_identity_variants_detail(self):
-#         # Ezma (user3) can not see user1 request identity variants detail, as user3 is not sender    
-#         # login user 1, create request and variant 
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         self.client.logout()  # log out user1
-#         # now log in user3
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         # try to get request identity variant detail
-#         response = self.client.get(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id))
-#         # response should be 404 Not Found, as user3 is not sender of this request
-#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)      
+    def test_user_cannot_see_other_users_request_identity_variants_for_sent_requests(self):
+        # Ezma user can not see users one request identity variant 
+        # login in as user 1, create request and variant, logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        self.client.logout()
+        # now login as Ezma, and try to view that variant
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.get(self.request_send_request_identity_variant_detail_url(1, 1))
+        # response should be 404, as Ezma is not the sender
+        self.assertEqual(response.status_code, 404)     
 
 #     # stranger can not see users request identity variants detail
-#     def test_stranger_cannot_see_users_request_identity_variants_detail(self):
-#         # post login user1, create request and variant 
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         self.client.logout()  # log out user1
-#         # now try to get request identity variant detail as stranger
-#         response = self.client.get(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id))
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_see_users_request_identity_variants_detail(self):
+        # stranger should not be able to see details for user1 requst identity variant 
+        # login in as user 1, create request and variant, logout 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        self.client.logout()
+        # get details without being authenticated 
+        response = self.client.get(self.request_send_request_identity_variant_detail_url(1, 1))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/1/request-identity-variant/1/')
 
-#     # user can update request identity variant 
-#     def test_user_can_update_request_identity_variant(self):
-#         # post login user 1, create request, and create request identity variant
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED) 
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         # now update the request identity variant
-#         updated_data = {
-#             'label': 'Updated First Name in Polish',
-#             'context': 'Updated first name in Polish language.',
-#         }
-#         response = self.client.put(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id), updated_data)
-#         # response should be 200 OK
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should have the updated data
-#         self.assertIn('label', response.json())
-#         self.assertEqual(response.json()['label'], updated_data['label'])
-#         self.assertIn('context', response.json())
-#         self.assertEqual(response.json()['context'], updated_data['context'])
+#     # user can update request identity variant
+    def test_user_can_update_request_identity_variant(self):
+        # login user1, create request and variant 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        # now update variant 
+        response = self.client.post(self.request_send_request_identity_variant_update_url(1, 1), self.valid_updated_request_identity_variant_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.valid_updated_request_identity_variant_data['label'])
+        self.assertContains(response, self.valid_updated_request_identity_variant_data['context'])
 
 #     # user can not update other users request identity variant
-#     def test_user_cannot_update_other_users_request_identity_variant(self):
-#         # Ezma (user3) can not update user1 request identity variant, as user3 is not sender    
-#         # post login user1, create request and variant 
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         self.client.logout()  # log out user1
-#         # now log in user3, and try to update users1 request identity variant
-#         self.client.login(username=self.valid_username3, password=self.valid_password3)
-#         updated_data = {
-#             'label': 'Malicious Update First Name in Polish',
-#             'context': 'Malicious updated first name in Polish language.',
-#         }
-#         response = self.client.put(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id), updated_data)
-#         # response should be 404 Not Found, as user3 is not sender of this request
-#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_user_cannot_update_other_users_request_identity_variant(self):
+        # Ezma tries updates users1 requst identity variant 
+        # login user1, create request and variant, logout
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        self.client.logout()
+        # now login as Ezma and try to update users1 variant 
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        response = self.client.post(self.request_send_request_identity_variant_update_url(1, 1), self.valid_updated_request_identity_variant_data, follow=True)
+        # response should be 404, as Ezma is not the sender
+        self.assertEqual(response.status_code, 404)     
+
+
+
 
 #     # stranger can not update users request identity variant
-#     def test_stranger_cannot_update_users_request_identity_variant(self):
-#         # post login user1, create request and variant 
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         self.client.logout()  # log out user1
-#         # now try to update request identity variant as stranger
-#         updated_data = {
-#             'label': 'Malicious Update First Name in Polish',
-#             'context': 'Malicious updated first name in Polish language.',
-#         }
-#         response = self.client.put(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id), updated_data)
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_update_users_request_identity_variant(self):
+        # stranger can not update users1 request identity variant 
+        # login user1, create request and variant, logout
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        self.client.logout()
+        # try updating as stranger 
+        response = self.client.post(self.request_send_request_identity_variant_update_url(1, 1), self.valid_updated_request_identity_variant_data)
+        # response should be 302 , redirect for stranger to login 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/1/request-identity-variant/1/edit/')
 
 #     # user sender can not update link field that is meant for receiver to manage 
-#     def test_user_sender_can_not_update_link_field_for_receiver(self):
-#         # post login user1, create request, and create request identity variant
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED) 
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         # now try to update the link field
-#         updated_data = {
-#             'label': 'updated label',
-#             'context': 'updated context',
-#             'user_provided_variant': '1',  # 'user_provided_variant' is read only sender should not be able to update it and fish the request user data 
-#         }
-#         response = self.client.put(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id), updated_data)
-#         # response should be 200 becaue label and context get updated, but user_provided_variant should not be updated
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # response data should have the updated data
-#         self.assertIn('label', response.json())
-#         self.assertEqual(response.json()['label'], updated_data['label'])
-#         self.assertIn('context', response.json())
-#         self.assertEqual(response.json()['context'], updated_data['context'])
-#         # user_provided_variant should not be updated, it should be read only for sender
-#         self.assertIn('user_provided_variant', response.json())
-#         self.assertEqual(response.json()['user_provided_variant'], None)  # should stay none instead of of attempted inser value 
+    def test_user_sender_can_not_update_link_field_for_receiver(self):
+        # Ezma tries to steal users profile identity variants, by changing send request - request identity variant receivers link field 
+        self.client.login(username=self.valid_username3, password=self.valid_password3)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        # set the data with fishing 
+        updated_data = {    
+            'label': 'Super First Name in Polish',
+            'context': 'Superupdated first name in Polish language.',
+            'user_provided_variant': '1',  # maliciuos attempt 'user_provided_variant' is read only sender should not be able to update it and fish the request user data 
+        }
+        response = self.client.post(self.request_send_request_identity_variant_update_url(1, 1), updated_data, follow=True)
+        # label and context should be changed, but user_provided_variant should still stay none 
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, updated_data['label'])
+        self.assertContains(response, updated_data['context'])
+        self.assertContains(response, '---') # its '---' for none in hmtl, or receiver variant if not none 
+
+
 
 #     # stranger can not update users request identity variant link field
-#     def test_stranger_cannot_update_users_request_identity_variant_link_field(self):
-#         # post login user1, create request and variant 
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         self.client.logout()  # log out user1
-#         # now try to update request identity variant as stranger
-#         updated_data = {    
-#             'label': 'Malicious Update First Name in Polish',
-#             'context': 'Malicious updated first name in Polish language.',
-#             'user_provided_variant': '1',  # 'user_provided_variant' is read only sender should not be able to update it and fish the request user data 
-#         }
-#         response = self.client.put(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id), updated_data)
-#         # response should be 401 Unauthorized
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    def test_stranger_cannot_update_users_request_identity_variant_link_field(self):
+        # stranger should not be able to update variant 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        self.client.logout()
+        # set the data with fishing 
+        updated_data = {    
+            'label': 'Super First Name in Polish',
+            'context': 'Superupdated first name in Polish language.',
+            'user_provided_variant': '1',  # maliciuos attempt 'user_provided_variant' is read only sender should not be able to update it and fish the request user data 
+        }
+        response = self.client.post(self.request_send_request_identity_variant_update_url(1, 1), updated_data)
+        # response should be 302 , redirect for stranger to login 
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/request/send/1/request-identity-variant/1/edit/')
+        
 
 #     # user can delete request identity variant
-#     def test_user_can_delete_request_identity_variant(self):
-#         # post login user1, create request, and create request identity variant
-#         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
-#         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED) 
-#         request_id = create_response.json()['id']
-#         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
-#         self.assertEqual(create_variant_response.status_code, status.HTTP_201_CREATED)
-#         request_identity_variant_id = create_variant_response.json()['id']
-#         # now delete the request identity variant
-#         response = self.client.delete(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id))
-#         # response should be 204 No Content
-#         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-#         # to make sure I will try to get the deleted request identity variant
-#         response = self.client.get(self.request_send_request_identity_variant_detail_url(request_id, request_identity_variant_id))
-#         # response should be 404 Not Found, as the request identity variant was deleted
-#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_user_can_delete_request_identity_variant(self):
+        # login, create request and request variant 
+        self.client.login(username=self.valid_username1, password=self.valid_password1)
+        self.client.post(self.request_send_create_url, {'receiver': self.valid_username2, 'request_reasoning':self.valid_request_reasoning})
+        self.client.post(self.request_send_request_identity_variant_create_url(1), self.valid_request_identity_variant_data, follow=True)
+        # now delete variant
+        response = self.client.post(self.request_send_request_identity_variant_delete_url(1, 1), follow=True)
+        # it should go back to request detail, and variant data should not be there since it got deleted 
+        self.assertNotContains(response, self.valid_request_identity_variant_data['label'])
+        self.assertNotContains(response, self.valid_request_identity_variant_data['context'])
 
 #     # user can not delete other users request identity variant
 #     def test_user_cannot_delete_other_users_request_identity_variant(self):
 #         # Ezma (user3) can not delete user1 request identity variant, as user3 is not sender    
 #         # post login user1, create request and variant 
 #         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
+#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':self.valid_request_reasoning'})
 #         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 #         request_id = create_response.json()['id']
 #         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
@@ -915,7 +732,7 @@ class RequestsSendTests(TestCase):
 #     def test_stranger_cannot_delete_users_request_identity_variant(self):
 #         # post login user1, create request and variant 
 #         self.client.login(username=self.valid_username1, password=self.valid_password1)
-#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':'Dental office data request.'})
+#         create_response = self.client.post(self.request_send_list_create_url, {'receiver_username': self.valid_username2, 'request_reasoning':self.valid_request_reasoning'})
 #         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 #         request_id = create_response.json()['id']
 #         create_variant_response = self.client.post(self.request_send_request_identity_variant_list_create_url(request_id), self.valid_request_identity_variant_data)
@@ -987,7 +804,7 @@ class RequestsSendTests(TestCase):
 #         self.request1 = Request.objects.create(
 #             sender=self.user,
 #             receiver=self.user2,
-#             request_reasoning='Dental office data request.',
+#             request_reasoning=self.valid_request_reasoning',
 #         )
 
 #         # create request identity variant for request1
@@ -1035,7 +852,7 @@ class RequestsSendTests(TestCase):
 #         # check if the created request is in the response data
 #         received_request = response.json()[0]
 #         self.assertEqual(received_request['sender_username'], self.valid_username1)
-#         self.assertEqual(received_request['request_reasoning'], 'Dental office data request.')  
+#         self.assertEqual(received_request['request_reasoning'], self.valid_request_reasoning')  
 
 #     # user can not see other  users list of received requests 
 #     def test_user_cannot_see_other_users_list_of_received_requests(self):
@@ -1070,7 +887,7 @@ class RequestsSendTests(TestCase):
 #         self.assertIn('sender_username', response.json())
 #         self.assertEqual(response.json()['sender_username'], self.valid_username1)
 #         self.assertIn('request_reasoning', response.json())
-#         self.assertEqual(response.json()['request_reasoning'], 'Dental office data request.')
+#         self.assertEqual(response.json()['request_reasoning'], self.valid_request_reasoning')
 #         # request detail also has list of request identity variants, so i will check if it is there
 #         self.assertIn('request_identity_variants', response.json())
 #         # request identity variants should be a list

@@ -324,3 +324,8 @@ it insures that stranger can't access and login page shows
 as i was doing testing, i couldn't understand why send requset is not passing, then after literrly getting all html 
 response i found that i am not showing receiver username, but sender, i missed it, but test didn't 
 
+during testing i realized I don't handle properly unathenticated user trying to access RequestIdentityVariant view
+because in dispatch i call super to enforce login required afer I do self_request to make sure user has access 
+to parent object, but to check that I check request.user but since none is authenticated server has error 
+instead of handeling it, so I added has permission before that 
+
