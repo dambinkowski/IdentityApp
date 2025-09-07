@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions
+from rest_framework import generics
 from core.models import * 
 from .serializers import *
 from .permissions import *

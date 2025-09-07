@@ -96,7 +96,6 @@ class AuthenticationTests(APITestCase):
         # post register with valid data
         response = self.client.post(self.register_url, self.valid_user_registration_data)
         # response should be 201 Created
-        print(response.status_code, response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # response data should have a 'key' which is a token
         self.assertIn('key', response.json())  
@@ -105,7 +104,6 @@ class AuthenticationTests(APITestCase):
     def test_user_cannot_register_with_existing_username(self):
         # post register with existing username
         response = self.client.post(self.register_url, username=self.valid_username, email='john1@example.com', password=self.valid_password)
-        print(response.status_code, response.json())
         # response should be 400 Bad Request
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # response data should have a 'username' error
@@ -708,7 +706,6 @@ class RequestsSendTests(APITestCase):
         self.assertEqual(response.json()['label'], self.valid_request_identity_variant_data['label'])
         self.assertIn('context', response.json())
         self.assertEqual(response.json()['context'], self.valid_request_identity_variant_data['context'])
-        print("Response line 710", response.json()['label'])
 
     # user can not see other users request identity variants detail
     def test_user_cannot_see_other_users_request_identity_variants_detail(self):
@@ -1434,8 +1431,7 @@ class RequestsReceiveTests(APITestCase):
         self.assertEqual(response.json()['link_to_id_profile_identity_variant'], 1)
         # and part that is shared with the request person is the variant, so it should be the same as profile identity variant - variant field 
         self.assertEqual(response.json()['user_provided_variant'], self.profile_identity_variant1.variant)
-        print(" code line 1436 ")
-        print(response.json()['user_provided_variant'])
+
 
     # user can not link other users request identity variant with profile identity variant for accepted request
     def test_user_cannot_link_other_users_request_identity_variant_with_profile_identity_variant_for_accepted_request(self):
@@ -1597,7 +1593,6 @@ class RequestsReceiveTests(APITestCase):
         response = self.client.get(self.request_receive_request_identity_variant_list_url(1))
         shared_variant = response.json()[0].get('user_provided_variant')
         self.assertEqual(shared_variant, self.profile_identity_variant1.variant)
-        print("shared_variant: ", shared_variant)
         # now deny the request, data should be wiped and no longer shared 
         self.client.put(self.request_receive_deny_url(1))
         response = self.client.get(self.request_receive_request_identity_variant_list_url(1))

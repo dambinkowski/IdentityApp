@@ -1,5 +1,3 @@
-from django.http import HttpRequest
-from django.http.response import HttpResponse
 from core.models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, ListView, CreateView, DetailView, UpdateView, DeleteView

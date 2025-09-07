@@ -34,7 +34,6 @@ class IsRequestSender(BasePermission):
         return False
     
     
-    
 class IsRequestReceiver(BasePermission):
     """
     Checks if user is logged in and is the receiver of the Request
@@ -60,7 +59,6 @@ class IsRequestAccepted(BasePermission):
     """
     Check if request status is ACCEPTED
     """
-    
     def has_object_permission(self, request, view, obj):
         # if its Request instance 
         if isinstance(obj, Request):
