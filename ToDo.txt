@@ -329,3 +329,14 @@ because in dispatch i call super to enforce login required afer I do self_reques
 to parent object, but to check that I check request.user but since none is authenticated server has error 
 instead of handeling it, so I added has permission before that 
 
+in api test i wrote script to run tests, i realzied as i go over documentaion 
+that i can to this as well python manage.py test web.tests.RequestsReceiveTests
+i don't know why i didint' think of it 
+
+same thing with request permission, again i am looking pk with unauthicated user 
+and i can get request.user because its not authenticated, and my permission did 
+not handle it correctly with 404 instead i had error 
+
+i tried to make web views to act exactly as api views, i realized that 
+i don't block viewing receiver identity variant details for not accepted requests, 
+i did hide the button, but it felt not throughul so I digged in in permissions again and added 

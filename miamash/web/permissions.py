@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import Http404
 from django.views.generic import View
 from core.models import *
 from django.shortcuts import get_object_or_404
@@ -62,7 +63,11 @@ class RequestReceiverPermissionMixin(LoginRequiredMixin, View):
     # helper method to get the request object from the URL using pk, only from the set of requests that user is allowed to access
     def get_secured_request(self):
         pk = self.kwargs.get('pk') # request pk from the URL
-        return self.get_queryset().get(pk=pk)  # use set of requests that user is allowed to access, then get request instance by pk 
+        try:
+            return self.get_queryset().get(pk=pk)
+        except self.model.DoesNotExist:
+            raise Http404("There is no such request.")
+
 
 class RequestReceiverRequestIdentityVariantPermissionMixin(LoginRequiredMixin, View):
     """
@@ -84,6 +89,8 @@ class RequestReceiverRequestIdentityVariantPermissionMixin(LoginRequiredMixin, V
             return self.handle_no_permission()
         # if user authenticated, check if has parent permission, or 404 they don't have such a resaurce access 
         self.request_receive = get_object_or_404(Request, pk=kwargs['pk'], receiver=request.user)  # only expose when there is match of PK from URL and the receiver is request.user 
+        if self.request_receive.status != Request.Status.ACCEPTED:
+            raise PermissionDenied("Request must be accepted to view variants.")
         return super().dispatch(request, *args, **kwargs)
     
 class IsRequestAcceptedPermissionMixin(View):
